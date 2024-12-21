@@ -30,7 +30,7 @@ This dataset contains nine classes of audio events in an urban environment.
 This small dataset contains 50 samples of real audio events we collected at the location.
 (It is private dataset as we need to preserve privacy).
 
-In this notebook we will use 🤗  ```dataset``` library to load this dataset. 
+We use 🤗  ```datasets``` library to load this dataset. 
 
 ### The notebooks
 In total there are four notebooks.
