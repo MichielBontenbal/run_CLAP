@@ -1,0 +1,41 @@
+{
+    "5": {
+        "label": "Slamming door",
+        "score": 0.791,
+        "human_annotation": "door"
+    },
+    "6": {
+        "label": "Machine",
+        "score": 0.788,
+        "human_annotation": "noise"
+    },
+    "7": {
+        "label": "Machine",
+        "score": 0.739,
+        "human_annotation": "noise"
+    },
+    "9": {
+        "label": "Machine",
+        "score": 0.856,
+        "human_annotation": "Machine"
+    },
+    "18": {
+        "label": "Machine",
+        "score": 0.779,
+        "human_annotation": "Machine"
+    },
+    "19": {
+        "label": "Claxon",
+        "score": 0.84,
+        "human_annotation": "dog"
+    },
+    "20": {
+        "label": "Machine",
+        "score": 0.867,
+        "human_annotation": "noise"
+    },
+    "31": {
+        "label": "Gunshot",
+        "score": 0.967,
+        "human_annotation": "gunshot"
+    },
