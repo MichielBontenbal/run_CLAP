@@ -39,3 +39,14 @@
         "score": 0.967,
         "human_annotation": "gunshot"
     },
+    "33": {
+        "label": "Moped",
+        "score": 0.733,
+        "human_annotation": "beep"
+    },
+    "41": {
+        "label": "Gunshot",
+        "score": 0.871,
+        "human_annotation": "Gunshot"
+    }
+}
