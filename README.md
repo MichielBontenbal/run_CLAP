@@ -46,3 +46,7 @@ Two notebooks using the UrbanSoundsSample dataset:
 4. Visualising the UrbanSoundsSamples with CLAP embeddings.ipynb (in progress)
 
 We run CLAP with the 🤗 ```transformers``` library. Please find more info: [Huggingface CLAP](https://huggingface.co/docs/transformers/model_doc/clap)
+
+### CLAP Video
+![CLAP Presentation](https://www.youtube.com/embed/C8PWxOxbE)
+
