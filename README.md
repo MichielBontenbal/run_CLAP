@@ -50,6 +50,10 @@ We run CLAP with the 🤗 ```transformers``` library. Please find more info: [Hu
 ### CLAP Video
 
 <video src='[your URL here](https://www.youtube.com/watch?v=orC8PWxOxbE)' width=400/>
-![CLAP Presentation](https://www.youtube.com/embed/C8PWxOxbE)
+
+  
+  ![CLAP Presentation](https://www.youtube.com/embed/C8PWxOxbE)
+
+  
 [![Video Title](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=VIDEO_ID)
 
