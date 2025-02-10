@@ -17,7 +17,7 @@ Sources:
 ### The datasets
 There are two dataset hosted on the Huggingface Hub.
 
-1. [UrbanSoundsII](https://huggingface.co/datasets/MichielBontenbal/UrbanSoundsII)
+1. [UrbanSoundsII](https://huggingface.co/datasets/UrbanSounds/UrbanSoundsNew)
 2. [UrbanSoundsSamples](https://huggingface.co/datasets/UrbanSounds/UrbanSoundsSamples)
 
 **UrbanSoundsII**
