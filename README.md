@@ -3,21 +3,21 @@ In this repo you will find code to run the CLAP model with data from the Urban S
 ### CLAP
 CLAP (Contrastive Language-Audio Pretraining) is a neural network trained on a variety of (audio, text) pairs. It can be instructed in to predict the most relevant text label given an audio sample.
 
-In this notebook we will use two CLAP models:
+In this repo we have tried two different models:
 1. larger clap music and speech
 2. larger clap general
 
 The larger clap general model seems to give better results. 
 
 Sources:
-- [huggingface page](https://huggingface.co/laion/larger_clap_general)
-- [CLAP paper: ](https://arxiv.org/abs/2211.06687)
+- [CLAP on Huggingface](https://huggingface.co/laion/larger_clap_general)
+- [CLAP paper](https://arxiv.org/abs/2211.06687)
 
 
 ### The datasets
 There are two dataset hosted on the Huggingface Hub.
 
-1. [UrbanSoundsII](https://huggingface.co/datasets/UrbanSounds/UrbanSoundsNew)
+1. [UrbanSoundsNew](https://huggingface.co/datasets/UrbanSounds/UrbanSoundsNew)
 2. [UrbanSoundsSamples](https://huggingface.co/datasets/UrbanSounds/UrbanSoundsSamples)
 
 **UrbanSoundsII**
