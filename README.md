@@ -48,7 +48,7 @@ Two notebooks using the UrbanSoundsSample dataset:
 We run CLAP with the 🤗 ```transformers``` library. Please find more info: [Huggingface CLAP](https://huggingface.co/docs/transformers/model_doc/clap)
 
 ### CLAP Video
+[Watch the video on YouTube](https://youtu.be/orC8PWxOxbE)
 
-<iframe width="400" height="300" src="https://www.youtube.com/embed/orC8PWxOxbE" frameborder="0" allowfullscreen></iframe>
 
 
