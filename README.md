@@ -49,6 +49,6 @@ We run CLAP with the 🤗 ```transformers``` library. Please find more info: [Hu
 
 ### CLAP Video
 
-<video src='[https://www.youtube.com/watch?v=orC8PWxOxbE](https://youtu.be/orC8PWxOxbE?si=3iTUSwQ0i0U9MZfk)' width=400/>
+<video src='[Youtube Video](https://youtu.be/orC8PWxOxbE?si=3iTUSwQ0i0U9MZfk)' width=400/>
 
 
