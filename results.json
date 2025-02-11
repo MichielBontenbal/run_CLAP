@@ -1,0 +1,122 @@
+{
+    "filename": [
+        "samples/2025-02-10_20-38-14.wav",
+        "samples/2025-02-10_20-38-14.wav"
+    ],
+    "result": [
+        {
+            "score": 0.47123515605926514,
+            "label": "Screaming"
+        },
+        {
+            "score": 0.4594155550003052,
+            "label": "Silence"
+        },
+        {
+            "score": 0.04919607192277908,
+            "label": "Airco"
+        },
+        {
+            "score": 0.006231608800590038,
+            "label": "Claxon"
+        },
+        {
+            "score": 0.003251154674217105,
+            "label": "Slamming door"
+        },
+        {
+            "score": 0.0030473489314317703,
+            "label": "Talking"
+        },
+        {
+            "score": 0.0026044670958071947,
+            "label": "Birds"
+        },
+        {
+            "score": 0.001197557314299047,
+            "label": "Gunshot"
+        },
+        {
+            "score": 0.0011828267015516758,
+            "label": "Car"
+        },
+        {
+            "score": 0.0008081781561486423,
+            "label": "Motorcycle"
+        },
+        {
+            "score": 0.0007839786121621728,
+            "label": "Moped"
+        },
+        {
+            "score": 0.0005850164452567697,
+            "label": "Music"
+        },
+        {
+            "score": 0.00025111058494076133,
+            "label": "Noise"
+        },
+        {
+            "score": 0.0002098860131809488,
+            "label": "Alarm"
+        },
+        [
+            {
+                "score": 0.47123515605926514,
+                "label": "Screaming"
+            },
+            {
+                "score": 0.4594155550003052,
+                "label": "Silence"
+            },
+            {
+                "score": 0.04919607192277908,
+                "label": "Airco"
+            },
+            {
+                "score": 0.006231608800590038,
+                "label": "Claxon"
+            },
+            {
+                "score": 0.003251154674217105,
+                "label": "Slamming door"
+            },
+            {
+                "score": 0.0030473489314317703,
+                "label": "Talking"
+            },
+            {
+                "score": 0.0026044670958071947,
+                "label": "Birds"
+            },
+            {
+                "score": 0.001197557314299047,
+                "label": "Gunshot"
+            },
+            {
+                "score": 0.0011828267015516758,
+                "label": "Car"
+            },
+            {
+                "score": 0.0008081781561486423,
+                "label": "Motorcycle"
+            },
+            {
+                "score": 0.0007839786121621728,
+                "label": "Moped"
+            },
+            {
+                "score": 0.0005850164452567697,
+                "label": "Music"
+            },
+            {
+                "score": 0.00025111058494076133,
+                "label": "Noise"
+            },
+            {
+                "score": 0.0002098860131809488,
+                "label": "Alarm"
+            }
+        ]
+    ]
+}
