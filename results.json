@@ -1,7 +1,8 @@
 {
     "filename": [
         "samples/2025-02-10_20-38-14.wav",
-        "samples/2025-02-10_20-38-14.wav"
+        "samples/2025-02-10_20-38-14.wav",
+        "samples/2025-02-24_14-09-15.wav"
     ],
     "result": [
         {
@@ -116,6 +117,64 @@
             {
                 "score": 0.0002098860131809488,
                 "label": "Alarm"
+            }
+        ],
+        [
+            {
+                "score": 0.5663310289382935,
+                "label": "Moped"
+            },
+            {
+                "score": 0.262673556804657,
+                "label": "Car"
+            },
+            {
+                "score": 0.16916221380233765,
+                "label": "Motorcycle"
+            },
+            {
+                "score": 0.0016724562738090754,
+                "label": "Airco"
+            },
+            {
+                "score": 9.046698687598109e-05,
+                "label": "Silence"
+            },
+            {
+                "score": 1.9126224287902005e-05,
+                "label": "Alarm"
+            },
+            {
+                "score": 1.8739017832558602e-05,
+                "label": "Claxon"
+            },
+            {
+                "score": 6.874771770526422e-06,
+                "label": "Slamming door"
+            },
+            {
+                "score": 6.724291324644582e-06,
+                "label": "Music"
+            },
+            {
+                "score": 6.432550435420126e-06,
+                "label": "Birds"
+            },
+            {
+                "score": 6.056957772671012e-06,
+                "label": "Noise"
+            },
+            {
+                "score": 3.0268317914305953e-06,
+                "label": "Screaming"
+            },
+            {
+                "score": 2.9265690955071477e-06,
+                "label": "Talking"
+            },
+            {
+                "score": 3.2624751611365355e-07,
+                "label": "Gunshot"
             }
         ]
     ]
