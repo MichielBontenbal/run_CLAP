@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+print('Starting script...')
 #import basic python packages
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,7 +14,7 @@ import librosa.display
 import pyaudio
 import wave 
 #import deep learning packages
-import torch #not used but necessary for transformers
+#import torch #not used but necessary for transformers
 from transformers import pipeline
 
 
@@ -120,10 +121,10 @@ spec = np.abs(librosa.stft(y, hop_length=512))
 spec = librosa.amplitude_to_db(spec, ref=np.max)
 
 plt.figure()
-#librosa.display.specshow(spec, sr=sr, x_axis='time', y_axis='log')
-plt.colorbar(format='%+2.0f dB')
-plt.title('Spectrogram')
-spectogram_filename = current_time.strftime("%Y-%m-%d_%H-%M-%S") + ".png"
+librosa.display.specshow(spec, sr=sr, x_axis='time', y_axis='log')
+#plt.colorbar(format='%+2.0f dB')
+plt.title(f"Result: {result[0]['label']}: {round(result[0]['score'],4)}")
+spectogram_filename =  os.path.join("samples", current_time.strftime("%Y-%m-%d_%H-%M-%S") + ".png")
 plt.savefig(spectogram_filename, transparent=False, dpi=80, bbox_inches="tight")
 #plt.show()
 
