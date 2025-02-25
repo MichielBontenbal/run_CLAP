@@ -2,7 +2,8 @@
     "filename": [
         "samples/2025-02-10_20-38-14.wav",
         "samples/2025-02-10_20-38-14.wav",
-        "samples/2025-02-24_14-09-15.wav"
+        "samples/2025-02-24_14-09-15.wav",
+        "samples/2025-02-25_09-16-57.wav"
     ],
     "result": [
         {
@@ -175,6 +176,64 @@
             {
                 "score": 3.2624751611365355e-07,
                 "label": "Gunshot"
+            }
+        ],
+        [
+            {
+                "score": 0.9925925135612488,
+                "label": "Birds"
+            },
+            {
+                "score": 0.002811122452840209,
+                "label": "Airco"
+            },
+            {
+                "score": 0.002788913669064641,
+                "label": "Talking"
+            },
+            {
+                "score": 0.0011360051576048136,
+                "label": "Silence"
+            },
+            {
+                "score": 0.00032384111545979977,
+                "label": "Music"
+            },
+            {
+                "score": 0.0001048304548021406,
+                "label": "Moped"
+            },
+            {
+                "score": 6.501191819552332e-05,
+                "label": "Motorcycle"
+            },
+            {
+                "score": 5.9992111346218735e-05,
+                "label": "Screaming"
+            },
+            {
+                "score": 3.9869220927357674e-05,
+                "label": "Noise"
+            },
+            {
+                "score": 3.062516771024093e-05,
+                "label": "Gunshot"
+            },
+            {
+                "score": 2.2845391868031584e-05,
+                "label": "Car"
+            },
+            {
+                "score": 1.4182632185111288e-05,
+                "label": "Slamming door"
+            },
+            {
+                "score": 6.298079824773595e-06,
+                "label": "Alarm"
+            },
+            {
+                "score": 3.946168362745084e-06,
+                "label": "Claxon"
             }
         ]
     ]
