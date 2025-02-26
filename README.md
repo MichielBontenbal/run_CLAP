@@ -33,7 +33,6 @@ This small dataset contains 50 samples of real audio events we collected at the 
 We use 🤗  ```datasets``` library to load this dataset. 
 
 ### The notebooks
-In total there are four notebooks.
 
 Two notebooks using the UrbanSoundsII dataset:
 
@@ -45,10 +44,15 @@ Two notebooks using the UrbanSoundsSample dataset:
 3. Real UrbanSoundsSamples with CLAP.ipynb
 4. Visualising the UrbanSoundsSamples with CLAP embeddings.ipynb (in progress)
 
+5. A notebook to create an audio pipeline: UrbanSounds_audio_pipeline.ipynb
+
 We run CLAP with the 🤗 ```transformers``` library. Please find more info: [Huggingface CLAP](https://huggingface.co/docs/transformers/model_doc/clap)
 
+### The python script
+Finally, the resulting python script that we will use on the new Raspberry Pi.
+
 ### CLAP Video
-[Watch the video on YouTube](https://youtu.be/orC8PWxOxbE)
+[Watch the video on YouTube](https://youtu.be/dPcVhHVIoIs)
 
 
 
