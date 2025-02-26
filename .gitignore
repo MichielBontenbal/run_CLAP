@@ -1,3 +1,4 @@
 # Ignore all .pt files
 *.pt
 *.wav
+*.png

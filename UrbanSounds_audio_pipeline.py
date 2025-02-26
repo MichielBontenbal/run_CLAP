@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
-
 print('Starting script...')
-#import basic python packages
+
+#import standard python packages
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 import datetime
 import os
 #import audio packages
@@ -14,69 +14,73 @@ import librosa.display
 import pyaudio
 import wave 
 #import deep learning packages
-#import torch #not used but necessary for transformers
 from transformers import pipeline
 
 
-# 1. TAKE AUDIO SAMPLE AND SAVE IT
+# 1. FUNCTIONS 
+def set_start():
+    """Set the start time of the recording"""
+    global start_time
+    start_time = datetime.datetime.now()
+    return start_time
 
-#set the filename based on current time
-current_time = datetime.datetime.now()
-WAVE_OUTPUT_FILENAME = current_time.strftime("%Y-%m-%d_%H-%M-%S") + ".wav"
+def record_audio(duration=10, output_folder="samples"):
+    """Record 10 s of audio and save it as a .wav file. Filename is starttime"""
+    # Set the filename based on start time
+    
+    WAVE_OUTPUT_FILENAME = start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".wav"
 
-# Audio recording parameters
-CHUNK = 1024
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 48000
-RECORD_SECONDS = 10
+    # Audio recording parameters
+    chunk = 1024
+    format = pyaudio.paInt16
+    channels = 1
+    rate = 48000
 
-# Initialize PyAudio
-audio = pyaudio.PyAudio()
+    # Initialize PyAudio
+    audio = pyaudio.PyAudio()
 
-# Open stream
-stream = audio.open(format=FORMAT, channels=CHANNELS,
-                    rate=RATE, input=True,
-                    frames_per_buffer=CHUNK)
+    # Open stream
+    stream = audio.open(format=format, channels=channels,
+                        rate=rate, input=True,
+                        frames_per_buffer=chunk)
 
-print("Recording...")
+    print("Recording...")
 
-frames = []
+    frames = []
 
-# Record for RECORD_SECONDS
-for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-    data = stream.read(CHUNK)
-    frames.append(data)
+    # Record for the specified duration
+    for _ in range(0, int(rate / chunk * duration)):
+        data = stream.read(chunk)
+        frames.append(data)
 
-print("Recording finished.")
+    print("Recording finished.")
 
-# Stop and close the stream
-stream.stop_stream()
-stream.close()
-audio.terminate()
+    # Stop and close the stream
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
 
-# Save the recorded data as a WAV file
+    # Ensure the output folder exists
+    os.makedirs(output_folder, exist_ok=True)
 
-# Ensure the "samples" folder exists
-os.makedirs("samples", exist_ok=True)
+    # Define the output filename with the output folder
+    WAVE_OUTPUT_FILENAME = os.path.join(output_folder, WAVE_OUTPUT_FILENAME)
 
-# Define the output filename with the "samples" folder
-WAVE_OUTPUT_FILENAME = os.path.join("samples", WAVE_OUTPUT_FILENAME)
+    # Save the recorded data as a WAV file
+    with wave.open(WAVE_OUTPUT_FILENAME, 'wb') as wf:
+        wf.setnchannels(channels)
+        wf.setsampwidth(audio.get_sample_size(format))
+        wf.setframerate(rate)
+        wf.writeframes(b''.join(frames))
 
-wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-wf.setnchannels(CHANNELS)
-wf.setsampwidth(audio.get_sample_size(FORMAT))
-wf.setframerate(RATE)
-wf.writeframes(b''.join(frames))
-wf.close()
-print(f"Audio sample saved as {WAVE_OUTPUT_FILENAME}")
+    print(f"Audio sample saved as {WAVE_OUTPUT_FILENAME}")
+    
+    return WAVE_OUTPUT_FILENAME
 
-# 2. CLASSIFY AUDIO SAMPLE 
-
-wav_file_path = WAVE_OUTPUT_FILENAME
-
-# With the similarity search approach of CLAP we can now use a whole range of labels 
-labels_list =['Gunshot', 'Alarm', 'Moped', 'Car', 'Motorcycle', 'Claxon', 'Slamming door', 'Screaming', 'Talking','Music', 'Birds', 'Airco', 'Noise', 'Silence']
+def generate_labels_list():
+    """Generate a list of candidate labels"""
+    labels_list =['Gunshot', 'Alarm', 'Moped', 'Car', 'Motorcycle', 'Claxon', 'Slamming door', 'Screaming', 'Talking','Music', 'Birds', 'Airco', 'Noise', 'Silence']
+    return labels_list
 
 def audio_classification(wav_file_path, labels_list):
     """
@@ -99,34 +103,56 @@ def audio_classification(wav_file_path, labels_list):
     except Exception as e:
         return f"An error occurred: {e}"
 
-#call the function
-result = audio_classification(wav_file_path, labels_list)
+def load_audio_sample(wav_file_path):
+    """ load audio with librosa"""
+    # Load the sample with librosa
+    y, sr = librosa.load(wav_file_path)
+    return y, sr
 
+def calculate_ptp(y):
+    """Calculate the peak-to-peak value of the audio sample"""
+    ptp_value = float(np.ptp(y))
+    print(f"Peak-to-peak value: {round(ptp_value, 4)}")
+    return ptp_value
+
+def create_spectrogram(wav_file_path, result, ptp_value):
+    """Generate a spectrogram of the audio sample with a caption showing the classification results and peak-to-peak value"""
+    
+    #y, sr = librosa.load(wav_file_path)
+    spec = np.abs(librosa.stft(y, hop_length=512))
+    spec = librosa.amplitude_to_db(spec, ref=np.max)
+
+    plt.figure()
+    librosa.display.specshow(spec, sr=sr, x_axis='time', y_axis='log')
+    plt.colorbar(format='%+2.0f dB')
+    plt.title(f'Spectrogram {wav_file_path}', fontsize=10)
+
+    # Caption with multiple lines
+    caption = (f"{result[0]['label']}: {round(result[0]['score'], 4)} - "
+               f"{result[1]['label']}: {round(result[1]['score'], 4)} - "
+               f"{result[2]['label']}: {round(result[2]['score'], 4)} - "
+               f'p2p: {round(ptp_value, 4)}')
+    plt.figtext(0.5, 0.01, caption, ha="center", fontsize=10)
+    plt.xlabel('')
+    #plt.show() 
+    #save the plot
+    spectogram_filename =  os.path.join("samples", start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".png")
+    plt.savefig(spectogram_filename, transparent=False, dpi=80, bbox_inches="tight")
+
+# Calling the recording functions
+start_time = set_start()
+wav_file_path = record_audio()
+labels_list = generate_labels_list()
+
+# Calling the classification function
+result = audio_classification(wav_file_path, labels_list)
 print(f'First result is {result[0]['label']}: {result[0]['score']}')
 print(f'Second result is {result[1]['label']}: {result[1]['score']}')
 print(f'Third result is {result[2]['label']}: {result[2]['score']}')
 
+# Calling the data analysis functions
+y, sr = load_audio_sample(wav_file_path)
+ptp_value = calculate_ptp(y)
+create_spectrogram(wav_file_path, result, ptp_value)
 
-# 3. DATA ANALYSIS
-
-#load the sample with librosa and calculate Peak-2-peak
-y, sr = librosa.load(wav_file_path)
-
-ptp_value = np.ptp(y)
-print(f"Peak-to-peak value: {ptp_value}")
-
-#create a spectogram
-os.environ["TOKENIZERS_PARALLELISM"] = "false"  # or "true"
-spec = np.abs(librosa.stft(y, hop_length=512))
-spec = librosa.amplitude_to_db(spec, ref=np.max)
-
-plt.figure()
-librosa.display.specshow(spec, sr=sr, x_axis='time', y_axis='log')
-#plt.colorbar(format='%+2.0f dB')
-plt.title(f"Result: {result[0]['label']}: {round(result[0]['score'],4)}")
-spectogram_filename =  os.path.join("samples", current_time.strftime("%Y-%m-%d_%H-%M-%S") + ".png")
-plt.savefig(spectogram_filename, transparent=False, dpi=80, bbox_inches="tight")
-#plt.show()
-
-
-
+print('Script finished.')
