@@ -124,7 +124,7 @@ def create_spectrogram(wav_file_path, result, ptp_value):
     plt.figure()
     librosa.display.specshow(spec, sr=sr, x_axis='time', y_axis='log')
     plt.colorbar(format='%+2.0f dB')
-    plt.title(f'Spectrogram {wav_file_path}', fontsize=10)
+    plt.title(f'Spectogram {wav_file_path}', fontsize=10)
 
     # Caption with multiple lines
     caption = (f"{result[0]['label']}: {round(result[0]['score'], 4)} - "
@@ -145,19 +145,11 @@ while True:
     wav_file_path = record_audio()
     labels_list = generate_labels_list()
 
-<<<<<<< HEAD
-# Calling the classification function
-result = audio_classification(wav_file_path, labels_list)
-print(f"First result is {result[0]['label']}: {result[0]['score']}")
-print(f"Second result is {result[1]['label']}: {result[1]['score']}")
-print(f"Third result is {result[2]['label']}: {result[2]['score']}")
-=======
     # Calling the classification function
     result = audio_classification(wav_file_path, labels_list)
     print(f"First result is {result[0]['label']}: {result[0]['score']}")
     print(f"Second result is {result[1]['label']}: {result[1]['score']}")
     print(f"Third result is {result[2]['label']}: {result[2]['score']}")
->>>>>>> cad8e93c031efeea9b78a19eb3ca0f39ab6f10e5
 
     # Calling the data analysis functions
     y, sr = load_audio_sample(wav_file_path)
