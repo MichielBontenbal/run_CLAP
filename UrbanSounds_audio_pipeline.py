@@ -18,11 +18,12 @@ from transformers import pipeline
 
 # FUNCTIONS 
 def set_start():
+    global start_time
     """Set the start time of the recording"""
     start_time = datetime.datetime.now()
     return start_time
 
-def record_audio(duration=10, output_folder="samples", start_time)):
+def record_audio(duration=10, output_folder="samples"):
     """Record 10 s of audio and save it as a .wav file. Filename is starttime"""
     # Set the filename based on start time
     
@@ -113,7 +114,7 @@ def calculate_ptp(y):
     print(f"Peak-to-peak value: {round(ptp_value, 4)}")
     return ptp_value
 
-def create_spectrogram(wav_file_path, result, ptp_value, start_time):
+def create_spectrogram(wav_file_path, result, ptp_value):
     """Generate a spectrogram of the audio sample with a caption showing the classification results and peak-to-peak value"""
     
     #y, sr = librosa.load(wav_file_path)
