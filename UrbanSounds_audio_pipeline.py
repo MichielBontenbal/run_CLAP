@@ -138,20 +138,22 @@ def create_spectrogram(wav_file_path, result, ptp_value):
     spectogram_filename =  os.path.join("samples", start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".png")
     plt.savefig(spectogram_filename, transparent=False, dpi=80, bbox_inches="tight")
 
-# Calling the recording functions
-start_time = set_start()
-wav_file_path = record_audio()
-labels_list = generate_labels_list()
+while True:
+    print('start new loop')
+    # Calling the recording functions
+    start_time = set_start()
+    wav_file_path = record_audio()
+    labels_list = generate_labels_list()
 
-# Calling the classification function
-result = audio_classification(wav_file_path, labels_list)
-print(f'First result is {result[0]['label']}: {result[0]['score']}')
-print(f'Second result is {result[1]['label']}: {result[1]['score']}')
-print(f'Third result is {result[2]['label']}: {result[2]['score']}')
+    # Calling the classification function
+    result = audio_classification(wav_file_path, labels_list)
+    print(f"First result is {result[0]['label']}: {result[0]['score']}")
+    print(f"Second result is {result[1]['label']}: {result[1]['score']}")
+    print(f"Third result is {result[2]['label']}: {result[2]['score']}")
 
-# Calling the data analysis functions
-y, sr = load_audio_sample(wav_file_path)
-ptp_value = calculate_ptp(y)
-create_spectrogram(wav_file_path, result, ptp_value)
+    # Calling the data analysis functions
+    y, sr = load_audio_sample(wav_file_path)
+    ptp_value = calculate_ptp(y)
+    create_spectrogram(wav_file_path, result, ptp_value)
 
-print('Script finished.')
+#print('End of script.')
