@@ -15,6 +15,9 @@ import pyaudio
 import wave 
 #import deep learning packages
 from transformers import pipeline
+#RaspberryPi cpu temp 
+from subprocess import check_output
+from re import findall
 
 # FUNCTIONS 
 def set_start():
@@ -22,6 +25,10 @@ def set_start():
     """Set the start time of the recording"""
     start_time = datetime.datetime.now()
     return start_time
+
+def get_cputemp():
+    temp = check_output(["vcgencmd","measure_temp"]).decode("UTF-8")
+    return float(findall("\d+\.\d+",temp)[0])
 
 def record_audio(duration=10, output_folder="samples"):
     """Record 10 s of audio and save it as a .wav file. Filename is starttime"""
@@ -151,6 +158,9 @@ while True:
     print(f"Second result is {result[1]['label']}: {result[1]['score']}")
     print(f"Third result is {result[2]['label']}: {result[2]['score']}")
 
+    cpu_temp=get_cputemp()
+    print(cpu_temp)
+    
     # Calling the data analysis functions
     y, sr = load_audio_sample(wav_file_path)
     ptp_value = calculate_ptp(y)
