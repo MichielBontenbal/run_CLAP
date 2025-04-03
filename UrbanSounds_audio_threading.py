@@ -24,7 +24,7 @@ from re import findall
 # Global variables for thread communication
 audio_queue = queue.Queue()
 recording_active = threading.Event()
-recording_active.set()
+
 
 # FUNCTIONS 
 def set_start():
@@ -131,7 +131,7 @@ def calculate_ptp(y):
 def create_spectrogram(wav_file_path, result, ptp_value):
     """Generate a spectrogram of the audio sample with a caption showing the classification results and peak-to-peak value"""
     
-    #y, sr = librosa.load(wav_file_path)
+    y, sr = librosa.load(wav_file_path)
     spec = np.abs(librosa.stft(y, hop_length=512))
     spec = librosa.amplitude_to_db(spec, ref=np.max)
 
@@ -164,7 +164,7 @@ def recording_thread():
 
 def processing_thread():
     """Thread function for audio classification and analysis"""
-    while recording_active.is_set():
+    while recording_active.is_set(): #
         try:
             if not audio_queue.empty():
                 start_time, wav_file_path = audio_queue.get()
@@ -192,6 +192,7 @@ def processing_thread():
 def main():
     try:
         # Create and start threads
+        recording_active.set()
         recorder = threading.Thread(target=recording_thread)
         processor = threading.Thread(target=processing_thread)
         
