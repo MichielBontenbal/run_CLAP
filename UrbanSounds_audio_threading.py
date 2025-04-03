@@ -172,9 +172,9 @@ def processing_thread():
                 # Generate labels and classify
                 labels_list = generate_labels_list()
                 result = audio_classification(wav_file_path, labels_list)
-                print(f"First result is {result[0]['label']}: {result[0]['score']}")
-                print(f"Second result is {result[1]['label']}: {result[1]['score']}")
-                print(f"Third result is {result[2]['label']}: {result[2]['score']}")
+                print(f"First result is {result[0]['label']}: {round(result[0]['score'],5)}")
+                print(f"Second result is {result[1]['label']}: {round(result[1]['score'],5)}")
+                print(f"Third result is {result[2]['label']}: {round(result[2]['score'],5)}")
 
                 # Get CPU temperature
                 cpu_temp = get_cputemp()
@@ -199,6 +199,8 @@ def main():
         recorder.start()
         processor.start()
         
+        processor.join()
+
         # Keep the main thread running
         while True:
             pass
