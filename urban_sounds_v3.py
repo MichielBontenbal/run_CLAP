@@ -31,7 +31,7 @@ audio_queue = queue.Queue()
 recording_active = threading.Event()
 
 #variables for MQTT
-mqtt_port = 1883
+mqtt_port = 31090
 mqtt_host = config.mqtt_host
 mqtt_user = config.mqtt_user
 mqtt_password = config.mqtt_password 
