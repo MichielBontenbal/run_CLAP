@@ -22,7 +22,7 @@ from transformers import pipeline
 from subprocess import check_output
 from re import findall
 #imports for mqtt
-import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt
 import config
 import json
 
