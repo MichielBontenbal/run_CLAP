@@ -38,6 +38,8 @@ mqtt_password = config.mqtt_password
 app_id = config.app_id
 dev_id = 'OE007'
 topic = "pipeline/urbansounds/OE-007"
+client = mqtt.Client() # solving broken pipe issue
+client.username_pw_set(mqtt_user, mqtt_password)
 
 # FUNCTIONS 
 def set_start():
