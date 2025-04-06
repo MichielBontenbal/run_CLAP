@@ -23,7 +23,7 @@ from subprocess import check_output
 from re import findall
 #imports for mqtt
 import paho.mqtt.publish as publish
-import urban_sounds_config
+import config
 import json
 
 # Global variables for thread communication
@@ -31,10 +31,13 @@ audio_queue = queue.Queue()
 recording_active = threading.Event()
 
 #variables for MQTT
-mqtt_host = 
 mqtt_port = 1883
-mqtt_user = 
-mqtt_password = 
+mqtt_host = config.mqtt_host
+mqtt_user = config.mqtt_user
+mqtt_password = config.mqtt_password 
+app_id = config.app_id
+dev_id = 'OE007'
+topic = "pipeline/urbansounds/OE-007"
 
 # FUNCTIONS 
 def set_start():
@@ -206,20 +209,41 @@ def processing_thread():
                 mqtt_dict['ptp_value']=ptp_value
 
                 #creating the mqtt message 
-                msg_json = { 
-                "app_id": 'michiel',
-                "dev_id": "OE003",
-                "payload_fields": mqtt_dict,
-                "time": int(time.time() * 1e3)
-                }
-                msg_str = json.dumps(msg_json)
+                #msg_json = { 
+                #"payload_fields": mqtt_dict,
+                #"time": int(time.time() * 1e3)
+                #}
+                #msg_str = json.dumps(msg_json)
+                #print(msg_str)
+                #try: 
+                #    auth = {"username": mqtt_user, "password": mqtt_password}
+                #    publish.single("pipeline/openears/", payload=msg_str, hostname=mqtt_host, port=mqtt_port, auth=auth)
+                #    print('message sent')
+                #except:
+                #    print('a mqtt connection error occured')
+                
+                #Create the MQTT message and convert to JSON 
+                mqtt_message = {
+                    "app_id": app_id,
+                    "dev_id": dev_id, 
+                    "payload_fields": mqtt_dict,
+                    "time": int(time.time()*1000),
+                    }
+                msg_str = json.dumps(mqtt_message)
+                #print(topic)
                 print(msg_str)
-                try: 
-                    auth = {"username": mqtt_user, "password": mqtt_password}
-                    publish.single("pipeline/openears/OE001", payload=msg_str, hostname=mqtt_host, port=mqtt_port, auth=auth)
+            
+                # Connect to  MQTT client 
+                client.connect(mqtt_host)
+
+                # Publish the message
+                try:
+                    client.publish(topic, msg_str)
                     print('message sent')
                 except:
-                    print('a mqtt connection error occured')
+                    print('a connection error occured')
+                finally:
+                    client.disconnect()		
 
                 audio_queue.task_done()
         except Exception as e:
