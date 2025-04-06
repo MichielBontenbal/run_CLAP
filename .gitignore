@@ -2,3 +2,6 @@
 *.pt
 *.wav
 *.png
+
+# configuration file
+config.py
