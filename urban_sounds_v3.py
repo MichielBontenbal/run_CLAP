@@ -23,8 +23,9 @@ from subprocess import check_output
 from re import findall
 #imports for mqtt
 import paho.mqtt.client as mqtt
-import config
 import json
+#local imports
+import config
 
 # Global variables for thread communication
 audio_queue = queue.Queue()
@@ -43,42 +44,46 @@ client.username_pw_set(mqtt_user, mqtt_password)
 
 # FUNCTIONS 
 def set_start():
+    """ Set the start time of the recording """
     global start_time
-    """Set the start time of the recording"""
     start_time = datetime.datetime.now()
     return start_time
 
-def get_cputemp():
-    temp = check_output(["vcgencmd","measure_temp"]).decode("UTF-8")
-    return float(findall("\d+\.\d+",temp)[0])
+def get_cputemp():  # Code works on Raspberry Pi, exception when run on other platforms 
+    """Get the CPU temperature of the Raspberry Pi"""
+    try:
+        temp = check_output(["vcgencmd", "measure_temp"]).decode("UTF-8")
+        return float(findall("\d+\.\d+", temp)[0])
+    except FileNotFoundError:
+        return None  
 
 def record_audio(duration=10, output_folder="samples"):
     """Record 10 s of audio and save it as a .wav file. Filename is starttime"""
     # Set the filename based on start time
-    
     WAVE_OUTPUT_FILENAME = start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".wav"
 
-    # Audio recording parameters
-    chunk = 1024
-    format = pyaudio.paInt16
-    channels = 1
+    # Audio recording constants
+    CHUNK = 1024
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 1
+    RATE = 48000  # sample rate
     rate = 48000
 
     # Initialize PyAudio
     audio = pyaudio.PyAudio()
 
     # Open stream
-    stream = audio.open(format=format, channels=channels,
+    stream = audio.open(format=FORMAT, channels=CHANNELS,
                         rate=rate, input=True,
-                        frames_per_buffer=chunk)
+                        frames_per_buffer=CHUNK)
 
     print("Recording...")
 
     frames = []
 
     # Record for the specified duration
-    for _ in range(0, int(rate / chunk * duration)):
-        data = stream.read(chunk)
+    for _ in range(0, int(rate / CHUNK * duration)):
+        data = stream.read(CHUNK)
         frames.append(data)
 
     print("Recording finished.")
@@ -96,8 +101,8 @@ def record_audio(duration=10, output_folder="samples"):
 
     # Save the recorded data as a WAV file
     with wave.open(WAVE_OUTPUT_FILENAME, 'wb') as wf:
-        wf.setnchannels(channels)
-        wf.setsampwidth(audio.get_sample_size(format))
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(audio.get_sample_size(FORMAT))
         wf.setframerate(rate)
         wf.writeframes(b''.join(frames))
 
@@ -106,14 +111,12 @@ def record_audio(duration=10, output_folder="samples"):
     return WAVE_OUTPUT_FILENAME
 
 def generate_labels_list():
-    """Generate a list of candidate labels"""
+    """ Generate a list of candidate labels"""
     labels_list =['Gunshot', 'Alarm', 'Moped', 'Car', 'Motorcycle', 'Claxon', 'Slamming door', 'Screaming', 'Talking','Music', 'Birds', 'Airco', 'Noise', 'Silence']
     return labels_list
 
 def audio_classification(wav_file_path, labels_list):
-    """
-    Classify an audio file based on a list of candidate labels using a zero-shot audio classification model.
-    """
+    """ Classify an audio file based on a list of candidate labels using a zero-shot audio classification model."""
     try:
         # Read the audio file
         audio, samplerate = sf.read(wav_file_path)
@@ -132,19 +135,19 @@ def audio_classification(wav_file_path, labels_list):
         return f"An error occurred: {e}"
 
 def load_audio_sample(wav_file_path):
-    """ load audio with librosa"""
+    """ Load audio with librosa"""
     # Load the sample with librosa
     y, sr = librosa.load(wav_file_path)
     return y, sr
 
 def calculate_ptp(y):
-    """Calculate the peak-to-peak value of the audio sample"""
+    """ Calculate the peak-to-peak value of the audio sample"""
     ptp_value = float(np.ptp(y))
     print(f"Peak-to-peak value: {round(ptp_value, 4)}")
     return ptp_value
 
 def create_spectrogram(wav_file_path, result, ptp_value):
-    """Generate a spectrogram of the audio sample with a caption showing the classification results and peak-to-peak value"""
+    """ Generate a spectrogram of the audio sample with a caption showing the classification results and peak-to-peak value"""
     
     y, sr = librosa.load(wav_file_path)
     spec = np.abs(librosa.stft(y, hop_length=512))
@@ -162,15 +165,18 @@ def create_spectrogram(wav_file_path, result, ptp_value):
                f'p2p: {round(ptp_value, 4)}')
     plt.figtext(0.5, 0.01, caption, ha="center", fontsize=10)
     plt.xlabel('')
-    #plt.show() 
-    #save the plot
+    # plt.show() 
+    # Save the plot
     spectogram_filename =  os.path.join("samples", start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".png")
     plt.savefig(spectogram_filename, transparent=False, dpi=80, bbox_inches="tight")
+    plt.close()
 
 def recording_thread():
     """Thread function for continuous audio recording"""
     while recording_active.is_set():
         try:
+            RATE = 48000
+            print(f"Using sampling rate: {RATE}")
             start_time = set_start()
             wav_file_path = record_audio()
             audio_queue.put((start_time, wav_file_path))
@@ -200,7 +206,7 @@ def processing_thread():
                 ptp_value = calculate_ptp(y)
                 create_spectrogram(wav_file_path, result, ptp_value)
                 
-                #Creating a dict with top 3 
+                #Create a dictionary with top 5 results 
                 mqtt_dict = {
                     result[0]['label']:result[0]['score'],
                     result[1]['label']:result[1]['score'],
@@ -209,22 +215,8 @@ def processing_thread():
                     result[4]['label']:result[4]['score']}
                 mqtt_dict['cputemp']=cpu_temp 
                 mqtt_dict['ptp_value']=ptp_value
-
-                #creating the mqtt message 
-                #msg_json = { 
-                #"payload_fields": mqtt_dict,
-                #"time": int(time.time() * 1e3)
-                #}
-                #msg_str = json.dumps(msg_json)
-                #print(msg_str)
-                #try: 
-                #    auth = {"username": mqtt_user, "password": mqtt_password}
-                #    publish.single("pipeline/openears/", payload=msg_str, hostname=mqtt_host, port=mqtt_port, auth=auth)
-                #    print('message sent')
-                #except:
-                #    print('a mqtt connection error occured')
                 
-                #Create the MQTT message and convert to JSON 
+                # Create the MQTT message and convert to JSON 
                 mqtt_message = {
                     "app_id": app_id,
                     "dev_id": dev_id, 
@@ -236,14 +228,17 @@ def processing_thread():
                 print(msg_str)
             
                 # Connect to  MQTT client 
-                client.connect(mqtt_host)
+                try:
+                    client.connect(mqtt_host)
+                except paho.mqtt.client.MQTTException as e:
+                    print(f"MQTT connection error: {e}")
 
                 # Publish the message
                 try:
                     client.publish(topic, msg_str)
                     print('message sent')
-                except:
-                    print('a connection error occured')
+                except Exception as e:
+                    print(f"A connection error occurred: {e}")
                 finally:
                     client.disconnect()		
 
