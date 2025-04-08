@@ -48,9 +48,13 @@ def set_start():
     start_time = datetime.datetime.now()
     return start_time
 
-def get_cputemp():
-    temp = check_output(["vcgencmd","measure_temp"]).decode("UTF-8")
-    return float(findall("\d+\.\d+",temp)[0])
+def get_cputemp(): #code works on Raspberry Pi, exception of run on other platforms 
+    """Get the CPU temperature of the Raspberry Pi"""
+    try:
+        temp = check_output(["vcgencmd", "measure_temp"]).decode("UTF-8")
+        return float(findall("\d+\.\d+", temp)[0])
+    except FileNotFoundError:
+        return None  
 
 def record_audio(duration=10, output_folder="samples"):
     """Record 10 s of audio and save it as a .wav file. Filename is starttime"""
@@ -210,19 +214,6 @@ def processing_thread():
                 mqtt_dict['cputemp']=cpu_temp 
                 mqtt_dict['ptp_value']=ptp_value
 
-                #creating the mqtt message 
-                #msg_json = { 
-                #"payload_fields": mqtt_dict,
-                #"time": int(time.time() * 1e3)
-                #}
-                #msg_str = json.dumps(msg_json)
-                #print(msg_str)
-                #try: 
-                #    auth = {"username": mqtt_user, "password": mqtt_password}
-                #    publish.single("pipeline/openears/", payload=msg_str, hostname=mqtt_host, port=mqtt_port, auth=auth)
-                #    print('message sent')
-                #except:
-                #    print('a mqtt connection error occured')
                 
                 #Create the MQTT message and convert to JSON 
                 mqtt_message = {
@@ -236,7 +227,10 @@ def processing_thread():
                 print(msg_str)
             
                 # Connect to  MQTT client 
-                client.connect(mqtt_host)
+                try:
+                    client.connect(mqtt_host)
+                except paho.mqtt.client.MQTTException as e:
+                    print(f"MQTT connection error: {e}")
 
                 # Publish the message
                 try:
