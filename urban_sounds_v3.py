@@ -37,7 +37,7 @@ mqtt_host = config.mqtt_host
 mqtt_user = config.mqtt_user
 mqtt_password = config.mqtt_password 
 app_id = config.app_id
-dev_id = 'OE-007'
+dev_id = 'OE007'
 topic = "pipeline/urbansounds/OE-007"
 client = mqtt.Client() # solving broken pipe issue
 client.username_pw_set(mqtt_user, mqtt_password)
@@ -46,8 +46,10 @@ client.username_pw_set(mqtt_user, mqtt_password)
 def set_start():
     """ Set the start time of the recording """
     global start_time
+    global unix_time
     start_time = datetime.datetime.now()
-    return start_time
+    unix_time = int(time.mktime(start_time.timetuple()))
+    return start_time, unix_time
 
 def get_cputemp():  # Code works on Raspberry Pi, exception when run on other platforms 
     """Get the CPU temperature of the Raspberry Pi"""
@@ -112,7 +114,7 @@ def record_audio(duration=10, output_folder="samples"):
 
 def generate_labels_list():
     """ Generate a list of candidate labels"""
-    labels_list =['Gunshot', 'Alarm', 'Moped', 'Car', 'Motorcycle', 'Claxon', 'Slamming door', 'Screaming', 'Talking','Music', 'Birds', 'Airco', 'Noise', 'Silence']
+    labels_list =['Gunshot', 'Alarm', 'Moped', 'Car', 'Motorcycle', 'Airplane', 'Helicopter', 'Claxon', 'Slamming door', 'Screaming', 'Talking','Music', 'Birds', 'Airco', 'Noise', 'Silence']
     return labels_list
 
 def audio_classification(wav_file_path, labels_list):
@@ -170,6 +172,7 @@ def create_spectrogram(wav_file_path, result, ptp_value):
     spectogram_filename =  os.path.join("samples", start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".png")
     plt.savefig(spectogram_filename, transparent=False, dpi=80, bbox_inches="tight")
     plt.close()
+    return spec
 
 def recording_thread():
     """Thread function for continuous audio recording"""
@@ -192,14 +195,18 @@ def processing_thread():
                 
                 # Generate labels and classify
                 labels_list = generate_labels_list()
-                result = audio_classification(wav_file_path, labels_list)
+                try:
+                    result = audio_classification(wav_file_path, labels_list)
+                except Exception as e:
+                    print(f"Error during audio classification: {e}")
+                    continue
                 print(f"First result is {result[0]['label']}: {round(result[0]['score'],5)}")
                 print(f"Second result is {result[1]['label']}: {round(result[1]['score'],5)}")
                 print(f"Third result is {result[2]['label']}: {round(result[2]['score'],5)}")
 
                 # Get CPU temperature
-                cpu_temp = get_cputemp()
-                print(f"CPU Temperature: {cpu_temp}")
+                RPI_temp = get_cputemp()
+                print(f"RPi temperature: {RPI_temp}")
                 
                 # Analyze audio
                 y, sr = load_audio_sample(wav_file_path)
@@ -213,15 +220,17 @@ def processing_thread():
                     result[2]['label']:result[2]['score'],
                     result[3]['label']:result[3]['score'],
                     result[4]['label']:result[4]['score']}
-                mqtt_dict['cputemp']=cpu_temp 
-                mqtt_dict['ptp_value']=ptp_value
+                mqtt_dict['start_recording']=start_time.strftime("%Y-%m-%d_%H-%M-%S")
+                mqtt_dict['RPI_temp']=RPI_temp 
+                mqtt_dict['ptp']=ptp_value
+                mqtt_dict['spectrogram']=spec
                 
                 # Create the MQTT message and convert to JSON 
                 mqtt_message = {
                     "app_id": app_id,
                     "dev_id": dev_id, 
                     "payload_fields": mqtt_dict,
-                    "time": int(time.time()*1000),
+                    "time": time.time()*1000
                     }
                 msg_str = json.dumps(mqtt_message)
                 #print(topic)
