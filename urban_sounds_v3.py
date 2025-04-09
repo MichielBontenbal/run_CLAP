@@ -221,10 +221,10 @@ def processing_thread():
                     result[2]['label']:result[2]['score'],
                     result[3]['label']:result[3]['score'],
                     result[4]['label']:result[4]['score']}
-                mqtt_dict['start_recording']=start_time.strftime("%Y-%m-%d_%H-%M-%S")
+                mqtt_dict['start_recording']=unix_time
                 mqtt_dict['RPI_temp']=RPI_temp 
                 mqtt_dict['ptp']=ptp_value
-                mqtt_dict['spectrogram']=spec
+                mqtt_dict['spectrogram']=str(spec)
                 
                 # Create the MQTT message and convert to JSON 
                 mqtt_message = {
