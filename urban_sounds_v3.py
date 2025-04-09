@@ -175,9 +175,10 @@ def recording_thread():
     """Thread function for continuous audio recording"""
     while recording_active.is_set():
         try:
-            RATE = 48000
-            print(f"Using sampling rate: {RATE}")
+            #RATE = 48000
+            #print(f"Using sampling rate: {RATE}")
             start_time = set_start()
+            
             wav_file_path = record_audio()
             audio_queue.put((start_time, wav_file_path))
         except Exception as e:
