@@ -211,7 +211,7 @@ def processing_thread():
                 # Analyze audio
                 y, sr = load_audio_sample(wav_file_path)
                 ptp_value = calculate_ptp(y)
-                create_spectrogram(wav_file_path, result, ptp_value)
+                spec = create_spectrogram(wav_file_path, result, ptp_value)
                 
                 #Create a dictionary with top 5 results 
                 mqtt_dict = {
