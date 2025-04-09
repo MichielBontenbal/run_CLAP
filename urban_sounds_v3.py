@@ -231,7 +231,7 @@ def processing_thread():
                     "app_id": app_id,
                     "dev_id": dev_id, 
                     "payload_fields": mqtt_dict,
-                    "time": time.time()*1000
+                    "time": time.time()
                     }
                 msg_str = json.dumps(mqtt_message)
                 #print(topic)
