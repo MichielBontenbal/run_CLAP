@@ -193,11 +193,13 @@ def processing_thread():
         try:
             if not audio_queue.empty():
                 start_time, wav_file_path = audio_queue.get()
-                
+                print(f'start classifying: {wav_file_path}')
                 # Generate labels and classify
                 labels_list = generate_labels_list()
                 try:
+                    
                     result = audio_classification(wav_file_path, labels_list)
+                    
                 except Exception as e:
                     print(f"Error during audio classification: {e}")
                     continue
