@@ -30,16 +30,16 @@ import json
 import config
 
 # Setting to save recording of audio 
-SAVE_RECORDING = True
+SAVE_RECORDING = False
 
 #Settings for MQTT
 mqtt_port = 31090
 mqtt_host = config.mqtt_host
 mqtt_user = config.mqtt_user
 mqtt_password = config.mqtt_password 
-app_id = "urbansounds"
+app_id = "urban_sounds_clap"
 dev_id = 'OE-007'
-topic = "pipeline/urbansounds/OE-007"
+topic = "pipeline/urban_sounds_clap/OE-007"
 client = mqtt.Client() # solving broken pipe issue
 client.username_pw_set(mqtt_user, mqtt_password)
 
@@ -148,7 +148,7 @@ def recording_thread():
             #RATE = 48000
             #print(f"Using sampling rate: {RATE}")
             start_time = set_start()
-            sample_rate, audio_data = record_audio(duration=5, save_to_file=SAVE_RECORDING)
+            sample_rate, audio_data = record_audio(duration=10, save_to_file=SAVE_RECORDING)
             #wav_file_path = record_audio()
             audio_queue.put((start_time, audio_data))
         except Exception as e:
@@ -180,7 +180,6 @@ def processing_thread():
                 ptp_value = calculate_ptp(audio_data)
                 sample_rate = 48000
                 spectrogram_data = create_spectrogram(audio_data, sample_rate)
-                #print(f'spectrogram_data: {spectrogram_data}')
 
                 print('making mqtt_dict')
                 #Create a dictionary with top 5 results 
@@ -190,10 +189,10 @@ def processing_thread():
                     result[2]['label']:result[2]['score'],
                     result[3]['label']:result[3]['score'],
                     result[4]['label']:result[4]['score']}
-                #mqtt_dict['start_recording']=start_time-10 #lelijke oplossing om de start tijd goed te krijgen. Moet nog beter
+                mqtt_dict['start_recording']=unix_time -10 #lelijke oplossing om de start tijd goed te krijgen. Moet nog beter
                 mqtt_dict['RPI_temp']=RPI_temp 
                 mqtt_dict['ptp']=ptp_value
-                mqtt_dict['spectrogram']=spectrogram_data.tolist()
+                #mqtt_dict['spectrogram']=spectrogram_data.tolist()
                 #print(f'mqtt_dict: {mqtt_dict}')
               
                 # Convert all float32 values in mqtt_dict to native Python float
