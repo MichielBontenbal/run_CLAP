@@ -181,7 +181,6 @@ def processing_thread():
                 print('start classifying:')
                 # Generate labels and classify
                 labels_list = generate_labels_list()
-                print(labels_list)
                 try:
                     result = audio_classification(audio_data, labels_list)
                 except Exception as e:
@@ -207,7 +206,7 @@ def processing_thread():
                     result[2]['label']:result[2]['score'],
                     result[3]['label']:result[3]['score'],
                     result[4]['label']:result[4]['score']}
-                #mqtt_dict['start_recording']=start_time-10 #lelijke oplossing om de start tijd goed te krijgen. Moet nog beter
+                mqtt_dict['start_recording']=start_time-10 #lelijke oplossing om de start tijd goed te krijgen. Moet nog beter
                 mqtt_dict['RPI_temp']=RPI_temp 
                 #mqtt_dict['ptp']=ptp_value
                 #mqtt_dict['spectrogram']=str(spec)
