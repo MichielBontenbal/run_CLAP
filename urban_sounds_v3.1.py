@@ -77,7 +77,7 @@ def record_audio(duration=10, output_folder="samples", save_to_file=False):
     WAVE_OUTPUT_FILENAME = start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".wav"
 
     print("Recording...")
-    audio_data = sd.rec(int(duration * sample_rate), samplerate=SAMPLE_RATE, channels=CHANNELS, dtype='int16')
+    audio_data = sd.rec(int(duration * sample_rate), samplerate=SAMPLE_RATE, channels=CHANNELS, dtype='float32')
     sd.wait()  # Wait until recording is finished
     print("Recording complete.")
 
@@ -121,43 +121,25 @@ def audio_classification(audio_data, labels_list):
         return f"An error occurred: {e}"
     
 
-def load_audio_sample(audio_data):
-    """ Load audio with librosa"""
-    # Load the sample with librosa
-    y, sr = librosa.load(audio_data)
-    return y, sr
+def calculate_ptp(audio_data):
+    """ Calculate the peak-to-peak value of the audio data """
+    return np.ptp(audio_data)
 
-def calculate_ptp(y):
-    """ Calculate the peak-to-peak value of the audio sample"""
-    ptp_value = float(np.ptp(y))
-    print(f"Peak-to-peak value: {round(ptp_value, 4)}")
-    return ptp_value
+def create_spectrogram(audio_data, sample_rate):
+    """ Create and display a spectrogram from audio data """
+    # Compute the Short-Time Fourier Transform (STFT)
+    stft = librosa.stft(audio_data)
+    # Convert the complex-valued STFT to magnitude
+    spectrogram_data = np.abs(stft)
+    return spectrogram_data
 
-def create_spectrogram(audio_data, result, ptp_value):
-    """ Generate a spectrogram of the audio sample with a caption showing the classification results and peak-to-peak value"""
-    
-    y, sr = librosa.load(audio_data)
-    spec = np.abs(librosa.stft(y, hop_length=512))
-    spec = librosa.amplitude_to_db(spec, ref=np.max)
-
-    plt.figure()
-    librosa.display.specshow(spec, sr=sr, x_axis='time', y_axis='log')
-    plt.colorbar(format='%+2.0f dB')
-    plt.title(f'Spectogram ', fontsize=10)
-
-    # Caption with multiple lines
-    caption = (f"{result[0]['label']}: {round(result[0]['score'], 4)} - "
-               f"{result[1]['label']}: {round(result[1]['score'], 4)} - "
-               f"{result[2]['label']}: {round(result[2]['score'], 4)} - "
-               f'p2p: {round(ptp_value, 4)}')
-    plt.figtext(0.5, 0.01, caption, ha="center", fontsize=10)
-    plt.xlabel('')
-    # plt.show() 
-    # Save the plot
-    spectogram_filename =  os.path.join("samples", start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".png")
-    plt.savefig(spectogram_filename, transparent=False, dpi=80, bbox_inches="tight")
-    plt.close()
-    return spec
+    # Display the spectrogram
+    #plt.figure(figsize=(10, 6))
+    #librosa.display.specshow(librosa.amplitude_to_db(spectrogram_data, ref=np.max),
+    #                         sr=sample_rate, x_axis='time', y_axis='log')
+    #plt.colorbar(format='%+2.0f dB')
+    #plt.title('Spectrogram')
+    #plt.show()
 
 def recording_thread():
     """Thread function for continuous audio recording"""
@@ -193,11 +175,13 @@ def processing_thread():
                 # Get CPU temperature
                 RPI_temp = get_cputemp()
                 print(f"RPi temperature: {RPI_temp}")
-                
-                # Analyze audio
-                #y, sr = load_audio_sample(audio_data)
-                #ptp_value = calculate_ptp(y)
-                #spec = create_spectrogram(wav_file_path, result, ptp_value)
+
+                # Analyse audio
+                ptp_value = calculate_ptp(audio_data)
+                sample_rate = 48000
+                spectrogram_data = create_spectrogram(audio_data, sample_rate)
+                #print(f'spectrogram_data: {spectrogram_data}')
+
                 print('making mqtt_dict')
                 #Create a dictionary with top 5 results 
                 mqtt_dict = {
@@ -206,21 +190,28 @@ def processing_thread():
                     result[2]['label']:result[2]['score'],
                     result[3]['label']:result[3]['score'],
                     result[4]['label']:result[4]['score']}
-                mqtt_dict['start_recording']=start_time-10 #lelijke oplossing om de start tijd goed te krijgen. Moet nog beter
+                #mqtt_dict['start_recording']=start_time-10 #lelijke oplossing om de start tijd goed te krijgen. Moet nog beter
                 mqtt_dict['RPI_temp']=RPI_temp 
-                #mqtt_dict['ptp']=ptp_value
-                #mqtt_dict['spectrogram']=str(spec)
-                print('mqtt_dict done')
+                mqtt_dict['ptp']=ptp_value
+                mqtt_dict['spectrogram']=spectrogram_data.tolist()
+                #print(f'mqtt_dict: {mqtt_dict}')
+              
+                # Convert all float32 values in mqtt_dict to native Python float
+                mqtt_dict = {key: float(value) if isinstance(value, np.float32) else value for key, value in mqtt_dict.items()}
+
+                # Now you can safely serialize mqtt_dict to JSON
+                mqtt_json = json.dumps(mqtt_dict)
+
                 # Create the MQTT message and convert to JSON 
                 mqtt_message = {
                     "app_id": app_id,
                     "dev_id": dev_id, 
                     "payload_fields": mqtt_dict,
-                    "time": time.time()
+                    "time": int(time.time()*1000)
                     }
                 msg_str = json.dumps(mqtt_message)
-                #print(topic)
-                print(msg_str)
+                print(topic)
+                #print(msg_str)
             
                 # Connect to  MQTT client 
                 try:
