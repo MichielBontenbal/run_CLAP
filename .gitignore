@@ -5,3 +5,6 @@
 
 # configuration file
 config.py
+
+# duckdb
+urban_sounds.duckdb
