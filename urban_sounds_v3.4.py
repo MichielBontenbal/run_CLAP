@@ -212,22 +212,14 @@ def processing_thread():
             # Serialize mqtt_dict to JSON
             msg_str = json.dumps(mqtt_message)
             #print(msg_str)
-        
-            # Connect to  MQTT client 
-            try:
-                client.connect(mqtt_host)
-            except mqtt.MQTTException as e:
-                print(f"MQTT connection error: {e}")
                 
-
             # Publish the message
             try:
                 client.publish(topic, msg_str)
                 print('mqtt message sent')
             except Exception as e:
                 print(f"A connection error occurred: {e}")
-            finally:
-                client.disconnect()		
+		
 
             audio_queue.task_done()
         except Exception as e:
@@ -239,6 +231,13 @@ def main():
         recorder = threading.Thread(target=recording_thread)
         processor = threading.Thread(target=processing_thread)
         
+        # Connect to  MQTT client 
+        try:
+            client.connect(mqtt_host)
+        except mqtt.MQTTException as e:
+            print(f"MQTT connection error: {e}")
+        
+        # Start threads
         recorder.start()
         processor.start()
         
@@ -250,6 +249,7 @@ def main():
             
     except KeyboardInterrupt:
         print("\nStopping threads...")
+        client.disconnect() 
         recording_active.clear()
         recorder.join()
         processor.join()
