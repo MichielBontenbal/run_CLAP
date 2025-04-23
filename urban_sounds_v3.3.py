@@ -51,11 +51,9 @@ queue_lock = threading.Lock() # Add a lock for the queue
 # FUNCTIONS 
 def set_start():
     """ Set the start time of the recording """
-    global start_time
-    global unix_time
+    #global start_time
     start_time = datetime.datetime.now()
-    unix_time = int(time.mktime(start_time.timetuple()))
-    return start_time, unix_time
+    return start_time
 
 def get_cputemp():  # Code works on Raspberry Pi, exception when run on other platforms 
     """Get the CPU temperature of the Raspberry Pi"""
@@ -65,22 +63,20 @@ def get_cputemp():  # Code works on Raspberry Pi, exception when run on other pl
     except FileNotFoundError:
         return None  
 
-def record_audio(duration=10, output_folder="samples", save_to_file=False):
-
+def record_audio(duration, output_folder="samples", save_to_file=False, start_time=None):
+    """ Records audio for a specified duration and optionally saves it as a .wav file."""
     # Audio recording constants
     CHUNK = 1024
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     SAMPLE_RATE = 48000  # sample rate
     sample_rate= SAMPLE_RATE
-    """ Records audio for a specified duration and optionally saves it as a .wav file."""
     
     WAVE_OUTPUT_FILENAME = start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".wav"
 
-    print("Recording...")
+    #print("Recording...")
     audio_data = sd.rec(int(duration * sample_rate), samplerate=SAMPLE_RATE, channels=CHANNELS, dtype='float32')
     sd.wait()  # Wait until recording is finished
-    print("Recording complete.")
 
     # Ensure the output folder exists
     os.makedirs(output_folder, exist_ok=True)
@@ -145,24 +141,30 @@ def create_spectrogram(audio_data, sample_rate):
 def recording_thread():
     """Thread function for continuous audio recording"""
     while recording_active.is_set():
+        print('start recording thread')
         try:
             start_time = set_start()
-            sample_rate, audio_data = record_audio(duration=10, save_to_file=SAVE_RECORDING)
+            sample_rate, audio_data = record_audio(duration=10, save_to_file=SAVE_RECORDING, start_time=start_time)
             with queue_lock: # Acquire lock before putting into the queue
                 audio_queue.put((start_time, audio_data))
         except Exception as e:
             print(f"Error in recording thread: {e}")
+        print('recording thread completed')
         time.sleep(0.1)  # Add a small delay to reduce CPU usage / avoid busy-waiting
 
 def processing_thread():
-    """Thread function for audio classification and analysis"""
+    """Thread for audio classification and sending mqtt message"""
     while recording_active.is_set():
+        #print('start processing thread')
         try:
             try:
                 with queue_lock: # Acquire lock before getting from the queue
-                    start_time, audio_data = audio_queue.get(timeout=1)  # Add a timeout to avoid indefinite blocking
+                    start_time, audio_data = audio_queue.get(timeout=2)  # Add a timeout to avoid indefinite blocking
+                    print(f'start processing sample with start time: {start_time}')
             except queue.Empty:
+                print('Queue is empty, waiting for audio data...')
                 continue  # If the queue is empty, continue to the next iteration
+            
             print('start classifying:')
             # Generate labels and classify
             labels_list = generate_labels_list()
@@ -171,28 +173,28 @@ def processing_thread():
             except Exception as e:
                 print(f"Error during audio classification: {e}")
                 continue
-            print(f"First result is {result[0]['label']}: {round(result[0]['score'],5)}")
-            print(f"Second result is {result[1]['label']}: {round(result[1]['score'],5)}")
-            print(f"Third result is {result[2]['label']}: {round(result[2]['score'],5)}")
+            print(f"Classifications: {result[0]['label']}: {round(result[0]['score'],5)}  {result[1]['label']}: {round(result[1]['score'],5)}  {result[2]['label']}: {round(result[2]['score'],5)}")
 
             # Get CPU temperature
             RPI_temp = get_cputemp()
-            print(f"RPi temperature: {RPI_temp}")
+            #print(f"RPi temperature: {RPI_temp}")
 
             # Analyse audio
             ptp_value = calculate_ptp(audio_data)
             sample_rate = 48000
             spectrogram_data = create_spectrogram(audio_data, sample_rate)
 
-            print('making mqtt_dict')
-            #Create a dictionary with top 5 results 
+            #we want to add the start_time to the mqtt message but convert to unixtime first
+            unix_time = int(time.mktime(start_time.timetuple()))
+
+            #Create a dictionary for the MQTT message 
             mqtt_dict = {
                 result[0]['label']:result[0]['score'],
                 result[1]['label']:result[1]['score'],
                 result[2]['label']:result[2]['score'],
                 result[3]['label']:result[3]['score'],
                 result[4]['label']:result[4]['score']}
-            mqtt_dict['start_recording']=unix_time -10 #lelijke oplossing om de start tijd goed te krijgen. Moet nog beter
+            mqtt_dict['start_recording']=unix_time 
             mqtt_dict['RPI_temp']=RPI_temp 
             mqtt_dict['ptp']=ptp_value
             #mqtt_dict['spectrogram']=spectrogram_data.tolist()
@@ -212,7 +214,6 @@ def processing_thread():
                 "time": int(time.time()*1000)
                 }
             msg_str = json.dumps(mqtt_message)
-            print(topic)
             #print(msg_str)
         
             # Connect to  MQTT client 
@@ -224,7 +225,7 @@ def processing_thread():
             # Publish the message
             try:
                 client.publish(topic, msg_str)
-                print('message sent')
+                print('mqtt message sent')
             except Exception as e:
                 print(f"A connection error occurred: {e}")
             finally:
