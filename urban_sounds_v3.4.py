@@ -73,9 +73,7 @@ def get_cputemp():
         print(f"{e}Cannot get temperature, this code is intended for Raspberry Pi.")
 
 
-def record_audio(
-    duration, output_folder="samples", save_to_file=False, start_time=None
-):
+def record_audio(duration, output_folder="samples", save_to_file=False, start_time=None):
     """Records audio for a specified duration and optionally saves it as a .wav file."""
     # Audio recording constants
     CHUNK = 1024
@@ -212,7 +210,7 @@ def processing_thread():
 
             # Analyse audio
             ptp_value = calculate_ptp(audio_data)
-            sample_rate = 48000
+            sample_rate = 48000 # to clean up
             spectrogram_data = create_spectrogram(audio_data, sample_rate)
 
             # add the start_time to the mqtt message as unixtime
@@ -264,7 +262,7 @@ def processing_thread():
 
             # Clean the memory
             gc.collect()
-            print("garbage collected")
+            #print("garbage collected")
 
             audio_queue.task_done()
         except Exception as e:
