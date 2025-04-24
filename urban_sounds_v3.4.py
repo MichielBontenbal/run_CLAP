@@ -25,15 +25,14 @@ from re import findall
 
 # imports for mqtt
 import paho.mqtt.client as mqtt
+from paho.mqtt.client import CallbackAPIVersion 
 import json
 
 # local imports
 import config
 
 # Setting the Huggingface tokenizer setting and importing the pipeline
-os.environ["TOKENIZERS_PARALLELISM"] = (
-    "false"  # must be done before importing transformers
-)
+os.environ["TOKENIZERS_PARALLELISM"] = ("false"  # must be done before importing transformers)
 from transformers import pipeline
 
 # Setting to save recording of audio
@@ -47,7 +46,8 @@ mqtt_password = config.mqtt_password
 app_id = "urbansounds"
 dev_id = "OE-007"
 topic = "pipeline/urbansounds/OE-007"
-client = mqtt.Client()  # solving broken pipe issue
+# client = mqtt.Client()  # solving broken pipe issue
+client = mqtt.Client(callback_api_version=CallbackAPIVersion.VERSION2)
 client.username_pw_set(mqtt_user, mqtt_password)
 
 # Global variables for thread communication
@@ -65,12 +65,12 @@ def set_start():
 
 
 def get_cputemp():
-    """Get the CPU temperature of the Raspberry Pi. Code works on Raspberry Pi, exception when run on other platforms"""
+    """Get the CPU temperature of the Raspberry Pi, exception when run on other platforms"""
     try:
         temp = check_output(["vcgencmd", "measure_temp"]).decode("UTF-8")
         return float(findall("\d+\.\d+", temp)[0])
     except Exception as e:
-        return f"{e}Cannot get temperature, this code is intended for Raspberry Pi."
+        print(f"{e}Cannot get temperature, this code is intended for Raspberry Pi.")
 
 
 def record_audio(
@@ -116,31 +116,29 @@ def record_audio(
 def generate_labels_list():
     """Generate a list of candidate labels"""
     labels_list = [
-        "Gunshot",
-        "Alarm",
-        "Moped",
-        "Car",
-        "Motorcycle",
-        "Airplane",
-        "Helicopter",
-        "Claxon",
-        "Slamming door",
-        "Screaming",
-        "Talking",
-        "Music",
-        "Birds",
         "Airco",
+        "Airplane",
+        "Alarm",
+        "Birds",
+        "Car",
+        "Claxon",        
+        "Gunshot",
+        "Helicopter",        
+        "Moped",
+        "Motorcycle",
+        "Music",
         "Noise",
+        "Screaming",
         "Silence",
+        "Slamming door",
+        "Talking"
     ]
     return labels_list
 
 
 def initialize_audio_classifier():
     """Initialize the zero-shot audio classification model."""
-    return pipeline(
-        task="zero-shot-audio-classification", model="laion/larger_clap_general"
-    )
+    return pipeline(task="zero-shot-audio-classification", model="laion/larger_clap_general")
 
 
 def audio_classification(audio_classifier, audio_data, labels_list):
@@ -150,7 +148,7 @@ def audio_classification(audio_classifier, audio_data, labels_list):
         output = audio_classifier(audio_data, candidate_labels=labels_list)
         return output
     except Exception as e:
-        return f"An error occurred during classification: {e}"
+        print(f"An error occurred during classification: {e}")
 
 
 def calculate_ptp(audio_data):
@@ -159,10 +157,8 @@ def calculate_ptp(audio_data):
 
 
 def create_spectrogram(audio_data, sample_rate):
-    """Create and display a spectrogram from audio data"""
-    # Compute the Short-Time Fourier Transform (STFT)
+    """Create a spectrogram from audio data and convert to data"""
     stft = librosa.stft(audio_data)
-    # Convert the complex-valued STFT to magnitude
     spectrogram_data = np.abs(stft)
     return spectrogram_data
 
@@ -263,12 +259,8 @@ def processing_thread():
                     client.reconnect()
                     client.publish(topic, msg_str)
                     print("MQTT message sent after reconnection")
-            except mqtt.MQTTException as e:
-                print(f"MQTT error occurred: {e}")
             except Exception as e:
-                print(
-                    f"An unexpected error occurred while publishing MQTT message: {e}"
-                )
+                print(f"Unexpected error while publishing MQTT message: {e}")
 
             # Clean the memory
             gc.collect()
