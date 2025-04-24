@@ -61,9 +61,9 @@ def get_cputemp():
     try:
         temp = check_output(["vcgencmd", "measure_temp"]).decode("UTF-8")
         return float(findall("\d+\.\d+", temp)[0])
-    except FileNotFoundError:
-        return None  
-
+    except Exception as e:
+        return (f"{e}Cannot get temperature, this code is intended for Raspberry Pi.")
+         
 
 def record_audio(duration, output_folder="samples", save_to_file=False, start_time=None):
     """ Records audio for a specified duration and optionally saves it as a .wav file."""
