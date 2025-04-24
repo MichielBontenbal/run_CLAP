@@ -225,7 +225,8 @@ def processing_thread():
                 print(f"An unexpected error occurred while publishing MQTT message: {e}")
 		
             # Clean the memory
-            #gc.collect()
+            gc.collect()
+            print('garbage collected')
 
             audio_queue.task_done()
         except Exception as e:
