@@ -10,16 +10,13 @@ import time
 import os
 import threading
 import queue
+import gc #garbage collection
 #import audio packages
 import sounddevice as sd
 import scipy.io.wavfile as wav
 import soundfile as sf
 import librosa
-import librosa.display
 import pyaudio
-import wave 
-#imports for deep learning
-from transformers import pipeline
 #imports for cpu temp 
 from subprocess import check_output
 from re import findall
@@ -28,11 +25,14 @@ import paho.mqtt.client as mqtt
 import json
 #local imports
 import config
+#Setting the Huggingface tokenizer setting and importing the pipeline
+os.environ["TOKENIZERS_PARALLELISM"] = "false" #must be done before importing transformers
+from transformers import pipeline
 
 # Setting to save recording of audio 
 SAVE_RECORDING = False
 
-#Settings for MQTT
+#Settings for and initialization for MQTT
 mqtt_port = 31090
 mqtt_host = config.mqtt_host
 mqtt_user = config.mqtt_user
@@ -55,13 +55,15 @@ def set_start():
     start_time = datetime.datetime.now()
     return start_time
 
-def get_cputemp():  # Code works on Raspberry Pi, exception when run on other platforms 
-    """Get the CPU temperature of the Raspberry Pi"""
+
+def get_cputemp():  
+    """Get the CPU temperature of the Raspberry Pi. Code works on Raspberry Pi, exception when run on other platforms """
     try:
         temp = check_output(["vcgencmd", "measure_temp"]).decode("UTF-8")
         return float(findall("\d+\.\d+", temp)[0])
     except FileNotFoundError:
         return None  
+
 
 def record_audio(duration, output_folder="samples", save_to_file=False, start_time=None):
     """ Records audio for a specified duration and optionally saves it as a .wav file."""
@@ -74,10 +76,14 @@ def record_audio(duration, output_folder="samples", save_to_file=False, start_ti
     
     WAVE_OUTPUT_FILENAME = start_time.strftime("%Y-%m-%d_%H-%M-%S") + ".wav"
 
-    #print("Recording...")
-    audio_data = sd.rec(int(duration * sample_rate), samplerate=SAMPLE_RATE, channels=CHANNELS, dtype='float32')
-    sd.wait()  # Wait until recording is finished
-
+    try:
+        #print("Recording...")
+        audio_data = sd.rec(int(duration * sample_rate), samplerate=SAMPLE_RATE, channels=CHANNELS, dtype='float32')
+        sd.wait()  # Wait until recording is finished
+    except Exception as e:
+        print(f"Error during audio recording: {e}")
+        return None, None
+        
     # Ensure the output folder exists
     os.makedirs(output_folder, exist_ok=True)
 
@@ -98,29 +104,25 @@ def generate_labels_list():
     return labels_list
 
 
-def audio_classification(audio_data, labels_list):
-    """ Classify an audio file based on a list of candidate labels using a zero-shot audio classification model."""
+def initialize_audio_classifier():
+    """Initialize the zero-shot audio classification model."""
+    return pipeline(task="zero-shot-audio-classification", model="laion/larger_clap_general")
+
+
+def audio_classification(audio_classifier, audio_data, labels_list):
+    """Classify an audio file based on a list of candidate labels using the initialized audio classifier."""
     try:
-        # Read the audio file
-        #audio, samplerate = sf.read(wav_file_path)
-
-        # Initialize the audio classifier pipeline
-        audio_classifier = pipeline(task="zero-shot-audio-classification", model="laion/larger_clap_general")
-
         # Perform classification
         output = audio_classifier(audio_data, candidate_labels=labels_list)
-
         return output
-
-    except FileNotFoundError:
-        return "Error: The specified audio file was not found."
     except Exception as e:
-        return f"An error occurred: {e}"
-    
+        return f"An error occurred during classification: {e}"
+
 
 def calculate_ptp(audio_data):
     """ Calculate the peak-to-peak value of the audio data """
     return np.ptp(audio_data)
+
 
 def create_spectrogram(audio_data, sample_rate):
     """ Create and display a spectrogram from audio data """
@@ -130,13 +132,6 @@ def create_spectrogram(audio_data, sample_rate):
     spectrogram_data = np.abs(stft)
     return spectrogram_data
 
-    # Display the spectrogram
-    #plt.figure(figsize=(10, 6))
-    #librosa.display.specshow(librosa.amplitude_to_db(spectrogram_data, ref=np.max),
-    #                         sr=sample_rate, x_axis='time', y_axis='log')
-    #plt.colorbar(format='%+2.0f dB')
-    #plt.title('Spectrogram')
-    #plt.show()
 
 def recording_thread():
     """Thread function for continuous audio recording"""
@@ -152,6 +147,7 @@ def recording_thread():
         print('recording thread completed')
         time.sleep(0.1)  # Add a small delay to reduce CPU usage / avoid busy-waiting
 
+
 def processing_thread():
     """Thread for audio classification and sending mqtt message"""
     while recording_active.is_set():
@@ -165,11 +161,11 @@ def processing_thread():
                 print('Queue is empty, waiting for audio data...')
                 continue
             
+            # Classification
             print('start classifying:')
-            # Generate labels and classify
-            labels_list = generate_labels_list()
+            
             try:
-                result = audio_classification(audio_data, labels_list)
+                result = audio_classification(audio_classifier, audio_data, labels_list)
             except Exception as e:
                 print(f"Error during audio classification: {e}")
                 
@@ -183,7 +179,7 @@ def processing_thread():
             sample_rate = 48000
             spectrogram_data = create_spectrogram(audio_data, sample_rate)
 
-            #we want to add the start_time to the mqtt message but convert to unixtime first
+            #add the start_time to the mqtt message as unixtime 
             unix_time = int(time.mktime(start_time.timetuple()))
 
             #Create a dictionary for the MQTT message 
@@ -215,28 +211,47 @@ def processing_thread():
                 
             # Publish the message
             try:
-                client.publish(topic, msg_str)
-                print('mqtt message sent')
+                # Check if the client is connected
+                if client.is_connected():
+                    client.publish(topic, msg_str)
+                    print('Connection up & MQTT message sent successfully')
+                else:
+                    client.reconnect()
+                    client.publish(topic, msg_str)
+                    print('MQTT message sent after reconnection')
+            except mqtt.MQTTException as e:
+                print(f"MQTT error occurred: {e}")
             except Exception as e:
-                print(f"A connection error occurred: {e}")
+                print(f"An unexpected error occurred while publishing MQTT message: {e}")
 		
+            # Clean the memory
+            #gc.collect()
 
             audio_queue.task_done()
         except Exception as e:
             print(f"Error in processing thread: {e}")
+
+
 def main():
     try:
+        # Initialize the audio classifier and load the labels
+        global audio_classifier, labels_list
+        audio_classifier= initialize_audio_classifier()
+        labels_list = generate_labels_list()
+        
+        # Connect to MQTT client
+        try:
+            client.connect(mqtt_host)
+            client.loop_start()  # Start the MQTT network loop
+            print("Connected to MQTT broker and loop started")
+        except mqtt.MQTTException as e:
+            print(f"MQTT connection error: {e}")
+        
         # Create and start threads
         recording_active.set()
         recorder = threading.Thread(target=recording_thread)
         processor = threading.Thread(target=processing_thread)
-        
-        # Connect to  MQTT client 
-        try:
-            client.connect(mqtt_host)
-        except mqtt.MQTTException as e:
-            print(f"MQTT connection error: {e}")
-        
+    
         # Start threads
         recorder.start()
         processor.start()
@@ -249,6 +264,7 @@ def main():
             
     except KeyboardInterrupt:
         print("\nStopping threads...")
+        client.loop_stop()
         client.disconnect() 
         recording_active.clear()
         recorder.join()
