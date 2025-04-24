@@ -32,7 +32,7 @@ import json
 import config
 
 # Setting the Huggingface tokenizer setting and importing the pipeline
-os.environ["TOKENIZERS_PARALLELISM"] = ("false"  # must be done before importing transformers)
+os.environ["TOKENIZERS_PARALLELISM"] = "false"  # must be done before importing transformers)
 from transformers import pipeline
 
 # Setting to save recording of audio
