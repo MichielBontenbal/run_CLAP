@@ -1,10 +1,10 @@
-# Ignore all .pt files
+# Ignore all output files
 *.pt
 *.wav
 *.png
 
-# configuration file
+# configuration file with passwords
 config.py
 
-# duckdb
-urban_sounds.duckdb
+# nohup output
+nohup.out
