@@ -182,15 +182,17 @@ def processing_thread():
     """Thread for audio classification and sending mqtt message"""
     while recording_active.is_set():
         # print('start processing thread')
+        time.sleep(0.1)  # Add a small delay to reduce CPU usage / avoid busy-waiting
         try:
             try:
                 with queue_lock:  # Acquire lock before getting from the queue
                     start_time, audio_data = audio_queue.get(
-                        timeout=2
+                        timeout=1
                     )  # Add a timeout to avoid indefinite blocking
                     print(f"processing sample with start time: {start_time}")
             except queue.Empty:
                 print("Queue is empty, waiting for audio data...")
+                time.sleep(0.5)  # Wait for a short time before checking again
                 continue
 
             # Classification
@@ -263,8 +265,10 @@ def processing_thread():
             # Clean the memory
             gc.collect()
             #print("garbage collected")
-
+            
             audio_queue.task_done()
+            time.sleep(0.5)  # Add a small delay to reduce CPU usage 
+
         except Exception as e:
             print(f"Error in processing thread: {e}")
 

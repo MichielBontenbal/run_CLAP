@@ -7,7 +7,7 @@ import os # Import os module for path joining
 
 # --- Configuration ---
 INTERVAL = 0.2  # seconds between measurements
-DURATION = 30   # total seconds to monitor
+DURATION = 45   # total seconds to monitor
 OUTPUT_FILENAME = "cpu_usage_plot.png" # Name for the saved plot image
 # ---------------------
 
