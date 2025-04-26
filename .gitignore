@@ -8,3 +8,4 @@ config.py
 
 # nohup output
 nohup.out
+.nohup.out.swp
