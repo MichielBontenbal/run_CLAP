@@ -3,14 +3,14 @@
 print("Starting script...")
 
 # import standard python packages
-import numpy as np
-from matplotlib import pyplot as plt
 import datetime
-import time
-import os
-import threading
-import queue
 import gc  # garbage collection
+from matplotlib import pyplot as plt
+import numpy as np
+import os
+import queue
+import threading
+import time
 
 # import audio packages
 import sounddevice as sd
@@ -30,7 +30,7 @@ import json
 
 # local imports
 import config
-import sound_scapes # a file with settings for the soundscapes
+import sound_scapes # a file to load the labels
 
 # Setting the Huggingface tokenizer setting and importing the pipeline
 os.environ["TOKENIZERS_PARALLELISM"] = "false"  # must be done before importing transformers)
@@ -51,7 +51,7 @@ topic = "pipeline/urbansounds/OE-007"
 client = mqtt.Client(callback_api_version=CallbackAPIVersion.VERSION2)
 client.username_pw_set(mqtt_user, mqtt_password)
 
-# Global variables for thread communication
+# Variables for thread communication
 audio_queue = queue.Queue()
 recording_active = threading.Event()
 queue_lock = threading.Lock()  # Add a lock for the queue
@@ -60,7 +60,6 @@ queue_lock = threading.Lock()  # Add a lock for the queue
 # FUNCTIONS
 def set_start():
     """Set the start time of the recording"""
-    # global start_time
     start_time = datetime.datetime.now()
     return start_time
 
@@ -208,20 +207,16 @@ def processing_thread():
             unix_time = int(time.mktime(start_time.timetuple()))
 
             # Create a dictionary for the MQTT message
-            mqtt_dict = {
-                result[0]["label"]: result[0]["score"],
-                result[1]["label"]: result[1]["score"],
-                result[2]["label"]: result[2]["score"],
-                result[3]["label"]: result[3]["score"],
-                result[4]["label"]: result[4]["score"],
-            }
+            mqtt_dict = {}
+            for i, result_item in enumerate(result[:5]):  # Limit to top 5
+                mqtt_dict[result_item["label"]] = result_item["score"]
+            # Add additional data to the dictionary
             mqtt_dict["start_recording"] = unix_time
             mqtt_dict["RPI_temp"] = RPI_temp
             mqtt_dict["ptp"] = ptp_value
-            # mqtt_dict['spectrogram']=spectrogram_data.tolist()
-            # mwtt_dict['rms']=create_rms.tolist()
-            # print(f'mqtt_dict: {mqtt_dict}')
-
+            #mqtt_dict["spectrogram"] = spectrogram_data.tolist()  # Maybe later in the project (when we'll start data analysis)
+            #mqtt_dict["rms"] = create_rms(audio_data).tolist()  # Idem for later
+            
             # Convert all float32 values in mqtt_dict to native Python float
             mqtt_dict = {
                 key: float(value) if isinstance(value, np.float32) else value
