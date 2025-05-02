@@ -64,6 +64,9 @@ There are several settings in the python script, check before using it.
 ### 3. white noise experiments
 Some experiments with (vibe coded) jupyter notebooks to add white noise to a sample and see how it influences the results of the audio classification. TLDR: Even with 100% white noise added, results of audio classification is still good.
 
+### 4. CLAP documentation
+Provides images, a powerpoint and clips about CLAP. 
+
 ### CLAP Video
 [Watch the video on YouTube](https://youtu.be/dPcVhHVIoIs)
 
