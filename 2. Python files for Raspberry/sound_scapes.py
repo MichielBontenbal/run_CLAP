@@ -23,24 +23,4 @@ marineterrein_labels = [
         "Talking"
     ]
 
-my_home_labels = [
-        "Airco",
-        "Alarm",
-        "Birds",
-        "Car",,
-        "Claxon",        
-        "Helicopter",        
-        "Moped",
-        "Motorcycle",
-        "Music",
-        "Noise",
-        "Piano",
-        "Silence",
-        "Siren",
-        "Slamming door",
-        "Steps",
-        "Talking",
-        "Tram",
-        "Vacuum cleaner",
-        "Washing machine",
-    ]
+
