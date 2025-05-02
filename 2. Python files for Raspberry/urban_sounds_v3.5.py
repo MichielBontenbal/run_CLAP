@@ -230,7 +230,7 @@ def processing_thread():
                 "payload_fields": mqtt_dict,
                 "time": int(time.time() * 1000),
             }
-            # Serialize mqtt_dict to JSON
+
             msg_str = json.dumps(mqtt_message)
             # print(msg_str)
 
