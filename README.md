@@ -17,21 +17,11 @@ Sources:
 - [CLAP paper](https://arxiv.org/abs/2211.06687)
 
 
-### The datasets
-There are two dataset hosted on the Huggingface Hub.
+### The dataset
+This dataset contains nine classes of audio events in an urban environment. Contains 216 samples. The dataset is located on the 🤗 Huggingface Hub: 
 
-1. [UrbanSoundsNew](https://huggingface.co/datasets/UrbanSounds/UrbanSoundsNew) 
-2. [UrbanSoundsSamples](https://huggingface.co/datasets/UrbanSounds/UrbanSoundsSamples) 
-**UrbanSoundsII**
+[UrbanSoundsNew](https://huggingface.co/datasets/UrbanSounds/UrbanSoundsNew) 
 
-A new version of an old dataset as the original dataset got corrupted. This dataset contains nine classes of audio events in an urban environment. 
-
-**UrbanSoundsSamples**
-
-This small dataset contains 50 samples of real audio events we collected at the location.
-(It is private dataset as we need to preserve privacy).
-
-We use the 🤗  ```datasets``` library to load this dataset. 
 
 ## The repo folders
 
