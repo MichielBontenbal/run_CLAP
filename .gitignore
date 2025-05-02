@@ -7,6 +7,8 @@
 *.ipynb_checkpoints
 nohup.out
 results.json
+conda-lock.yml
+environment.yml
 
 # configuration file
 config.py
