@@ -30,6 +30,7 @@ import json
 
 # local imports
 import config
+import sound_scapes # a file with settings for the soundscapes
 
 # Setting the Huggingface tokenizer setting and importing the pipeline
 os.environ["TOKENIZERS_PARALLELISM"] = "false"  # must be done before importing transformers)
@@ -113,24 +114,7 @@ def record_audio(duration, output_folder="samples", save_to_file=False, start_ti
 
 def generate_labels_list():
     """Generate a list of candidate labels"""
-    labels_list = [
-        "Airco",
-        "Airplane",
-        "Alarm",
-        "Birds",
-        "Car",
-        "Claxon",        
-        "Gunshot",
-        "Helicopter",        
-        "Moped",
-        "Motorcycle",
-        "Music",
-        "Noise",
-        "Screaming",
-        "Silence",
-        "Slamming door",
-        "Talking"
-    ]
+    labels_list = sound_scapes.marineterrein_labels
     return labels_list
 
 
