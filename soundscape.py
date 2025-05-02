@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# A document with some soundscapes 
+# A document that contains settings for a soundscapes in the city. 
 # See for mor information: https://en.wikipedia.org/wiki/Soundscape
 
 marineterrein_labels = [

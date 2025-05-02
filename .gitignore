@@ -1,11 +1,17 @@
-# Ignore all output files
-*.pt
+# Pytorch model files
+*.pt 
+
+# Some other files / outputs
 *.wav
 *.png
+*.ipynb_checkpoints
+nohup.out
+results.json
 
-# configuration file with passwords
+# configuration file
 config.py
 
-# nohup output
-nohup.out
-.nohup.out.swp
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
