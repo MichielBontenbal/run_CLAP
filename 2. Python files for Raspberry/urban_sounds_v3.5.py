@@ -191,10 +191,9 @@ def processing_thread():
             except Exception as e:
                 print(f"Error during audio classification: {e}")
 
-            print(
-                f"Classifications: {result[0]['label']}: {round(result[0]['score'],5)}  {result[1]['label']}: {round(result[1]['score'],5)}  {result[2]['label']}: {round(result[2]['score'],5), {result[2]['label']}: {round(result[3]['score'],5), {result[3]['label']}: {round(result[4]['score'],5)}"
-            )
-
+            print(f"""Classifications: {result[0]['label']}: {round(result[0]['score'],5)} | {result[1]['label']}: {round(result[1]['score'],5)} | {result[2]['label']}: {round(result[2]['score'],5)} | {result[3]['label']}: {round(result[3]['score'],5)} | {result[4]['label']}: {round(result[4]['score'],5)}""")
+            total = result[0]['score'] + result[1]['score'] + result[2]['score'] + result[3]['score'] + result[4]['score']
+            print(f"Total score: {total}")
             # Get CPU temperature
             RPI_temp = get_cputemp()
 
