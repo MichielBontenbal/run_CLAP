@@ -192,7 +192,7 @@ def processing_thread():
                 print(f"Error during audio classification: {e}")
 
             print(
-                f"Classifications: {result[0]['label']}: {round(result[0]['score'],5)}  {result[1]['label']}: {round(result[1]['score'],5)}  {result[2]['label']}: {round(result[2]['score'],5)}"
+                f"Classifications: {result[0]['label']}: {round(result[0]['score'],5)}  {result[1]['label']}: {round(result[1]['score'],5)}  {result[2]['label']}: {round(result[2]['score'],5), {result[2]['label']}: {round(result[3]['score'],5), {result[3]['label']}: {round(result[4]['score'],5)}"
             )
 
             # Get CPU temperature
