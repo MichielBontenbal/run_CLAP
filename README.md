@@ -49,7 +49,9 @@ We use a config.py file with the credentials for MQTT. (Obviously, we do not sto
 We use **sound_scapes.py** to store the labels. For a given location, we can create a set of labels that we can classify. 
 Currently, there is one location: 'Marineterrein'.
 
-There are several settings in the python script, check before using it.
+There are several settings in the python script, check the script before using it!
+
+Also, this folder contains a sub-folder called 'cpu_usage', which contains a vibe-coded script that measures cpu_usage and creates a matplotlib graph as .png. Some results are also in this sub-folder. 
 
 ### 3. white noise experiments
 Some experiments with (vibe coded) jupyter notebooks to add white noise to a sample and see how it influences the results of the audio classification. TLDR: Even with 100% white noise added, results of audio classification is still good.
