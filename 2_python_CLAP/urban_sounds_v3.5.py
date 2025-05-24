@@ -1,40 +1,42 @@
 #!/usr/bin/env python
-# coding: utf-8
-print("Starting script...")
+"""
+Urban sounds classification using CLAP (Contrastive Language-Audio Pre-training) model.
+Real-time audio capture, processing, and MQTT publishing.
+"""
 
-# import standard python packages
 import datetime
-import gc  # garbage collection
-from matplotlib import pyplot as plt
+import gc
+import json
+import logging
 import numpy as np
 import os
 import queue
 import threading
 import time
-
-# import audio packages
-import sounddevice as sd
-import scipy.io.wavfile as wav
-import soundfile as sf
-import librosa
-import pyaudio
-
-# imports for cpu temp
-from subprocess import check_output
 from re import findall
+from subprocess import check_output
 
-# imports for mqtt
+import librosa
 import paho.mqtt.client as mqtt
-from paho.mqtt.client import CallbackAPIVersion 
-import json
+from paho.mqtt.client import CallbackAPIVersion
+import pyaudio
+import scipy.io.wavfile as wav
+import sounddevice as sd
+import soundfile as sf
 
-# local imports
 import config
-import sound_scapes # a file to load the labels
+import sound_scapes
 
-# Setting the Huggingface tokenizer setting and importing the pipeline
-os.environ["TOKENIZERS_PARALLELISM"] = "false"  # must be done before importing transformers)
+# Set Huggingface tokenizer setting before importing transformers
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from transformers import pipeline
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Setting to save recording of audio
 SAVE_RECORDING = False
