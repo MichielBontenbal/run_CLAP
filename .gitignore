@@ -12,6 +12,7 @@ environment.yml
 
 # configuration file
 config.py
+api_keys.py
 
 # Ignore Python cache files
 __pycache__/
