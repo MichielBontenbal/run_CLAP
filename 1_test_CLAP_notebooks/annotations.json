@@ -1,52 +1,27 @@
 {
-    "2": {
-        "label": "Moped",
-        "score": 0.761,
-        "human_annotation": "Motorcycle"
-    },
-    "8": {
-        "label": "Moped",
-        "score": 0.783,
-        "human_annotation": "Motorcycle"
-    },
-    "9": {
-        "label": "Moped",
-        "score": 0.751,
-        "human_annotation": "Motorcycle"
-    },
-    "10": {
-        "label": "Moped",
-        "score": 0.826,
-        "human_annotation": "Motorcycle"
-    },
-    "31": {
-        "label": "Moped",
-        "score": 0.772,
+    "6": {
+        "label": "Church bell",
+        "score": 0.739,
         "human_annotation": "noise"
     },
-    "42": {
-        "label": "Machine",
-        "score": 0.807,
-        "human_annotation": "Machine"
+    "7": {
+        "label": "Church bell",
+        "score": 0.834,
+        "human_annotation": "noise"
     },
-    "43": {
-        "label": "Machine",
-        "score": 0.934,
-        "human_annotation": "Machine"
+    "66": {
+        "label": "Birds",
+        "score": 0.784,
+        "human_annotation": "birds"
     },
-    "47": {
-        "label": "Machine",
-        "score": 0.839,
-        "human_annotation": "Machine"
+    "80": {
+        "label": "Helicopter",
+        "score": 0.873,
+        "human_annotation": "helicopter"
     },
-    "48": {
-        "label": "Machine",
-        "score": 0.84,
-        "human_annotation": "Machine"
-    },
-    "49": {
-        "label": "Machine",
-        "score": 0.871,
-        "human_annotation": "machine"
+    "82": {
+        "label": "Helicopter",
+        "score": 0.874,
+        "human_annotation": "helicopter"
     }
 }
