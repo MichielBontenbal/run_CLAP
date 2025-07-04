@@ -1,0 +1,87 @@
+{
+    "4": {
+        "label": "Siren",
+        "score": 0.926,
+        "human_annotation": "siren"
+    },
+    "5": {
+        "label": "Siren",
+        "score": 0.929,
+        "human_annotation": "siren"
+    },
+    "16": {
+        "label": "Church bell",
+        "score": 0.88,
+        "human_annotation": "construction"
+    },
+    "86": {
+        "label": "Siren",
+        "score": 0.895,
+        "human_annotation": "siren"
+    },
+    "87": {
+        "label": "Siren",
+        "score": 0.91,
+        "human_annotation": "siren"
+    },
+    "113": {
+        "label": "Airco",
+        "score": 0.891,
+        "human_annotation": "talking"
+    },
+    "114": {
+        "label": "Airco",
+        "score": 0.911,
+        "human_annotation": "talking"
+    },
+    "117": {
+        "label": "Airco",
+        "score": 0.904,
+        "human_annotation": "talking"
+    },
+    "149": {
+        "label": "Church bell",
+        "score": 0.92,
+        "human_annotation": "construction"
+    },
+    "164": {
+        "label": "Church bell",
+        "score": 0.864,
+        "human_annotation": "construction"
+    },
+    "185": {
+        "label": "Church bell",
+        "score": 0.904,
+        "human_annotation": "construction"
+    },
+    "191": {
+        "label": "Birds",
+        "score": 0.918,
+        "human_annotation": "birds"
+    },
+    "195": {
+        "label": "Birds",
+        "score": 0.903,
+        "human_annotation": "birds"
+    },
+    "255": {
+        "label": "Airplane",
+        "score": 0.961,
+        "human_annotation": "Airplane"
+    },
+    "267": {
+        "label": "Church bell",
+        "score": 0.991,
+        "human_annotation": "claxon"
+    },
+    "310": {
+        "label": "Airco",
+        "score": 0.878,
+        "human_annotation": "Talking"
+    },
+    "319": {
+        "label": "Church bell",
+        "score": 0.866,
+        "human_annotation": "unclear"
+    }
+}
