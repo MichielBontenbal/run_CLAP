@@ -13,9 +13,9 @@ import numpy as np
 
 
 # Some constants
-DURATION = 5  # duration of each audio recording in seconds 
+DURATION = 3  # duration of each audio recording in seconds 
 SAVE_RECORDING = False # whether to save the recorded audio as .wav files   
-OFFSET = 0.0  # offset for dB SPL calculation (to be calibrated based on the microphone sensitivity and recording setup)
+OFFSET = 94.0  # offset for dB SPL calculation (to be calibrated based on the microphone sensitivity and recording setup)
 
 def set_start():
     """Set the start time of the recording"""
@@ -61,18 +61,21 @@ def record_audio(duration, output_folder="samples", save_to_file=False, start_ti
 
 
 def create_rms(audio_data):
-    """Create a RMS value from audio data and convert to data"""
-    rms = librosa.feature.rms(y=audio_data)
-    return rms
+    """Create a RMS value mean across all frames from audio data and convert to data"""
+    rms_mean = float(np.mean(librosa.feature.rms(y=audio_data)))
+    return rms_mean
 
 
 def calculate_db_spl(rms):
     """Calculate dB SPL from RMS values using the formula: db_spl = 20 * np.log10(rms) + OFFSET"""
-    db_spl = 20 * np.log10(rms) + OFFSET
+    db_spl = 20 * np.log10(rms_mean) + OFFSET
     return db_spl
-
-start_time = set_start()
-sample_rate, audio_data = record_audio(DURATION, start_time=start_time)
-rms = create_rms(audio_data)
-db_spl = calculate_db_spl(rms)
-print(f"RMS: {rms.flatten()[0]:.6f}, dB SPL: {db_spl.flatten()[0]:.2f} dB")
+    
+i = 0
+while i < 5:
+    start_time = set_start()
+    sample_rate, audio_data = record_audio(DURATION, start_time=start_time)
+    rms_mean = create_rms(audio_data)
+    db_spl = calculate_db_spl(rms_mean)
+    print(f"RMS: {rms_mean:.6f}, dB SPL: {db_spl:.2f} dB")
+    i += 1

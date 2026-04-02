@@ -2,6 +2,7 @@
 """
 Urban sounds classification using CLAP (Contrastive Language-Audio Pre-training) model.
 Real-time audio capture, processing, and MQTT publishing.
+Tested and developed for Python 3.11 and 3.13
 """
 
 import datetime
@@ -42,7 +43,7 @@ logger = logging.getLogger(__name__)
 # Some constants
 DURATION = 10  # duration of each audio recording in seconds 
 SAVE_RECORDING = False # whether to save the recorded audio as .wav files   
-OFFSET = 0.0  # offset for dB SPL calculation (to be calibrated based on the microphone sensitivity and recording setup)
+OFFSET = 94.0  # offset for dB SPL calculation (to be calibrated based on the microphone sensitivity and recording setup)
 WIND_LAT = 52.372
 WIND_LON = 4.917 
 OPENWEATHER_API_KEY =config.openweather_api_key
@@ -63,6 +64,8 @@ client.username_pw_set(mqtt_user, mqtt_password)
 audio_queue = queue.Queue()
 recording_active = threading.Event()
 queue_lock = threading.Lock()  # Add a lock for the queue
+recording_count = 0   # counts processed recordings; used to rate-limit the OpenWeather call
+wind_speed = 0.0      # cached wind speed; refreshed every 60 recordings
 
 
 # FUNCTIONS
@@ -152,28 +155,28 @@ def create_spectrogram(audio_data, sample_rate):
     return spectrogram_data
 
 def create_rms(audio_data):
-    """Create a RMS value from audio data and convert to data"""
-    rms = librosa.feature.rms(y=audio_data)
-    return rms
+    """Create a RMS mean value from audio data and convert to data"""
+    rms_mean = float(np.mean(librosa.feature.rms(y=audio_data)))
+    return rms_mean
 
 
-def calculate_db_spl(rms):
+def calculate_db_spl(rms_mean):
     """Calculate dB SPL from RMS values using the formula: db_spl = 20 * np.log10(rms) + OFFSET"""
-    db_spl = 20 * np.log10(rms) + OFFSET
+    db_spl = 20 * np.log10(rms_mean) + OFFSET
+    #print(f"Calculated dB SPL: {db_spl} dB")
     return db_spl
 
 
 def get_current_wind_speed():
-    """Fetch the current wind speed from OpenWeather One Call API."""
+    """Fetch the current wind speed from OpenWeather Current Weather API."""
     if not OPENWEATHER_API_KEY:
         raise ValueError("OpenWeather API key is not configured.")
 
     response = requests.get(
-        "https://api.openweathermap.org/data/3.0/onecall",
+        "https://api.openweathermap.org/data/2.5/weather",
         params={
             "lat": WIND_LAT,
             "lon": WIND_LON,
-            "exclude": "minutely,hourly,daily,alerts",
             "appid": OPENWEATHER_API_KEY,
         },
         timeout=10,
@@ -181,7 +184,8 @@ def get_current_wind_speed():
     response.raise_for_status()
 
     weather_data = response.json()
-    return weather_data["current"]["wind_speed"]
+    print(f"Fetched wind data: {weather_data['wind']['speed']} m/s")
+    return weather_data["wind"]["speed"]
 
 
 def recording_thread():
@@ -220,7 +224,6 @@ def processing_thread():
 
             # Classification
             print("start classifying:")
-
             try:
                 result = audio_classification(audio_classifier, audio_data, labels_list)
             except Exception as e:
@@ -229,6 +232,7 @@ def processing_thread():
             print(f"""Classifications: {result[0]['label']}: {round(result[0]['score'],5)} | {result[1]['label']}: {round(result[1]['score'],5)} | {result[2]['label']}: {round(result[2]['score'],5)} | {result[3]['label']}: {round(result[3]['score'],5)} | {result[4]['label']}: {round(result[4]['score'],5)}""")
             total = result[0]['score'] + result[1]['score'] + result[2]['score'] + result[3]['score'] + result[4]['score']
             print(f"Total score: {total}")
+
             # Get CPU temperature
             RPI_temp = get_cputemp()
 
@@ -240,6 +244,20 @@ def processing_thread():
             # add the start_time to the mqtt message as unixtime
             unix_time = int(time.mktime(start_time.timetuple()))
 
+            #Get the windspeed after 60 recordings, to avoid hitting the OpenWeather API rate limit.
+            global recording_count, wind_speed
+            if recording_count % 60 == 0:
+                try:
+                    wind_speed = get_current_wind_speed()
+                    print(f"Wind speed updated: {wind_speed} m/s")
+                except Exception as e:
+                    print(f"Error fetching wind speed: {e}")
+            recording_count += 1
+
+            #Get RMS Energy and dB SPL
+            rms_mean = create_rms(audio_data)
+            db_spl = calculate_db_spl(rms_mean)
+
             # Create a dictionary for the MQTT message
             mqtt_dict = {}
             for i, result_item in enumerate(result[:5]):  # Limit to top 5
@@ -248,11 +266,13 @@ def processing_thread():
             mqtt_dict["start_recording"] = unix_time
             mqtt_dict["RPI_temp"] = RPI_temp
             mqtt_dict["ptp"] = ptp_value
-            mqtt_dict["rms"] = create_rms(audio_data).tolist()  # Idem for later
-            mqtt_dict["db_spl"] = calculate_db_spl(create_rms(audio_data)).tolist()  # Idem for later
+            mqtt_dict["rms"] = rms_mean
+            mqtt_dict["db_spl"] = db_spl
+            print(f"db measured: {mqtt_dict['db_spl']}")
             #mqtt_dict["spectrogram"] = spectrogram_data.tolist()  # Maybe later in the project (when we'll start data analysis)
-            mqtt_dict["wind_speed"] = get_current_wind_speed()  # Add current wind speed to the MQTT message
-            
+            mqtt_dict["wind_speed"] = wind_speed
+           
+
             # Convert all float32 values in mqtt_dict to native Python float
             mqtt_dict = {
                 key: float(value) if isinstance(value, np.float32) else value

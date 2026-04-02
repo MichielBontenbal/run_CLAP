@@ -39,3 +39,6 @@ Thumbs.db
 venv/
 env/
 ENV/
+.venv/
+run_clap/
+urbansounds/
