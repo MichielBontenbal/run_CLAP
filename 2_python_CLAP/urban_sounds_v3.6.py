@@ -323,11 +323,13 @@ def main():
 
         # Connect to MQTT client
         try:
-            client.connect(mqtt_host)
+            client.connect(mqtt_host, keepalive=300)
             client.loop_start()  # Start the MQTT network loop
             print("Connected to MQTT broker and loop started")
-        except mqtt.MQTTException as e:
-            print(f"MQTT connection error: {e}")
+        except:
+            pass
+        #except mqtt.MQTTException as e:
+        #    print(f"MQTT connection error: {e}")
 
         # Create and start threads
         recording_active.set()
